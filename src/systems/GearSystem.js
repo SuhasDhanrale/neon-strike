@@ -77,6 +77,7 @@ function updateSupplyButton() {
         if (lastButtonState !== 'active') {
             console.log('[GearSystem] Supply Energy button is now ACTIVE');
             lastButtonState = 'active'
+            EventBus.emit('state:energy_full')
         }
     } else {
         supplyBtn.disabled = true
@@ -85,6 +86,7 @@ function updateSupplyButton() {
         if (lastButtonState !== 'inactive') {
             console.log('[GearSystem] Supply Energy button is now INACTIVE');
             lastButtonState = 'inactive'
+            EventBus.emit('state:energy_draining')
         }
     }
 }

@@ -11,6 +11,7 @@ import { LeaderboardManager } from './leaderboard/leaderboardManager.js'
 import { LeaderboardUI } from './leaderboard/ui/leaderboardUI.js'
 import { GearBackground } from './visuals/Background/GearBackground.js'
 import { GearSystem } from './systems/GearSystem.js'
+import { SystemBot } from './ui/systemBot.js'
 
 function init() {
   // Canvas setup
@@ -45,6 +46,7 @@ function init() {
   // Init gear background (SVG, full-screen, persistent)
   GearBackground.init()
   GearSystem.init()
+  SystemBot.init()
 
   // Check FTUE
   if (ftueManager.shouldRun()) {

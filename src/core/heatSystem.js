@@ -17,6 +17,10 @@ export function addHeat(amount) {
   State.systemHeat += amount
   State.systemHeat = Math.max(0, Math.min(100, State.systemHeat))
 
+  if (prevHeat < 80 && State.systemHeat >= 80) {
+    EventBus.emit('state:heat_critical')
+  }
+
   if (prevHeat < ERUPTION_HEAT_THRESHOLD && State.systemHeat >= ERUPTION_HEAT_THRESHOLD) {
     triggerEruption()
   }
@@ -25,12 +29,18 @@ export function addHeat(amount) {
 }
 
 export function coolHeat(amount) {
+  const prevHeat = State.systemHeat
   State.systemHeat -= amount
   State.systemHeat = Math.max(0, Math.min(100, State.systemHeat))
+
+  if (prevHeat >= 80 && State.systemHeat < 80) {
+    EventBus.emit('state:heat_stable')
+  }
 }
 
 export function triggerEruption() {
   State.systemHeat = 0
+  EventBus.emit('state:heat_stable')
   State.graceMoves = GRACE_MOVES_AFTER_ERUPTION
   State.eruptionLiftPending = 0
 

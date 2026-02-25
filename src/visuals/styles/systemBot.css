@@ -1,0 +1,88 @@
+/* ============================================
+   SYSTEM BOT HUD - Ephemeral Transmissions
+   Volcanic Print aesthetic
+============================================ */
+
+.system-bot-container {
+    padding: 10px 20px;
+    margin: 10px auto;
+    width: 360px;
+    max-width: 90%;
+    /* Subtle dark backing */
+    background: rgba(26, 20, 16, 0.4);
+    border-left: 3px solid var(--ember);
+    text-align: left;
+
+    /* Initially hidden */
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+
+    /* Layout for stacking text */
+    position: relative;
+    height: 40px;
+    /* fixed height so it doesn't bounce */
+    display: flex;
+    align-items: center;
+}
+
+.system-bot-container.active {
+    opacity: 1;
+}
+
+.bot-text-layer {
+    position: absolute;
+    left: 20px;
+    /* aligns with padding */
+    width: calc(100% - 40px);
+    opacity: 0;
+    transform: translateY(5px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.bot-text-layer.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.bot-header-text {
+    font-family: 'Bebas Neue', sans-serif;
+    color: var(--ember);
+    font-size: 1.4rem;
+    letter-spacing: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.bot-subtext {
+    font-family: 'Rajdhani', sans-serif;
+    color: var(--parchment);
+    font-size: 0.95rem;
+    line-height: 1.1;
+    font-weight: 600;
+}
+
+/* Optional Glitch for Header Appearance */
+.bot-glitch-anim {
+    animation: bot-glitch 0.4s ease-out forwards;
+}
+
+@keyframes bot-glitch {
+    0% {
+        transform: translateX(-10px);
+        color: var(--cream);
+    }
+
+    30% {
+        transform: translateX(4px);
+    }
+
+    60% {
+        transform: translateX(-2px);
+    }
+
+    100% {
+        transform: translateX(0);
+    }
+}
