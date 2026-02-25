@@ -63,7 +63,7 @@
     bottom: 0;
     width: 2px;
     z-index: 10;
-    overflow: hidden;
+    overflow: visible;
 }
 
 .vertical-bar-container.left {

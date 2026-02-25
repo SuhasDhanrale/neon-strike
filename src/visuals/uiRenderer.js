@@ -5,6 +5,7 @@ import { ORB_TYPES } from '../config.js'
 import { EventBus } from '../eventBus.js'
 import { ORB_VISUALS, getOrbShape } from './theme.js'
 import { drawPolygon } from './vfxHelpers.js'
+import { GearSystem } from '../systems/GearSystem.js'
 
 // DOM element cache
 let scoreEl = null
@@ -111,6 +112,9 @@ export const uiRenderer = {
     this.updateEnergyBar()
     this.updateSkills()
     this.updateProgressionBar()
+
+    // Refresh gear supply button state
+    GearSystem.tickUI()
   },
 
   updateScore() {
@@ -154,11 +158,18 @@ export const uiRenderer = {
     const pct = (State.currentEnergy / State.maxEnergy) * 100
     energyFillEl.style.height = pct + '%'
 
-    energyFillEl.classList.remove('energy-full', 'energy-empty')
-    if (State.currentEnergy >= State.maxEnergy) {
-      energyFillEl.classList.add('energy-full')
-    } else if (State.currentEnergy <= 0) {
-      energyFillEl.classList.add('energy-empty')
+    // Handle drain animation
+    if (GearSystem.isDrainingEnergy()) {
+      energyFillEl.classList.add('draining')
+      energyFillEl.classList.remove('energy-full', 'energy-empty')
+    } else {
+      energyFillEl.classList.remove('draining')
+      energyFillEl.classList.remove('energy-full', 'energy-empty')
+      if (State.currentEnergy >= State.maxEnergy) {
+        energyFillEl.classList.add('energy-full')
+      } else if (State.currentEnergy <= 0) {
+        energyFillEl.classList.add('energy-empty')
+      }
     }
     // No text. No numbers. Bar only.
   },

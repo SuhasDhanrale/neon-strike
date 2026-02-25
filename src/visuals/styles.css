@@ -40,7 +40,7 @@
 body {
     margin: 0;
     padding: 0;
-    background-color: var(--ink-black);
+    background-color: #020617;
     overflow: hidden;
     font-family: 'Rajdhani', sans-serif;
     touch-action: none;
@@ -55,7 +55,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: flex-end;
-    background: var(--charcoal);
+    background: #020617;
     overflow: hidden;
     transition: background 0.2s;
 }
@@ -73,6 +73,9 @@ body {
 canvas {
     border: none;
     box-shadow: none;
+    background: transparent;
+    position: relative;
+    z-index: 1;
 }
 
 /* Gravity Vignette - simplified, no blur */
@@ -898,4 +901,98 @@ canvas {
 #lb-toggle-btn:hover {
     border-color: var(--ember);
     color: var(--parchment);
+}
+
+/* ══════════════════════════════════════════
+   GEAR SUPPLY ENERGY BUTTON
+   Sits above the vertical energy bar (right side)
+   Active only when energy bar is full
+══════════════════════════════════════════ */
+.gear-supply-btn {
+    position: absolute;
+    top: -38px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid #06b6d4;
+    background: rgba(2, 6, 23, 0.85);
+    color: #06b6d4;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: auto;
+    transition: all 0.3s ease;
+    z-index: 20;
+    padding: 0;
+    line-height: 1;
+}
+
+.gear-supply-btn.gear-supply-inactive {
+    opacity: 0.6;
+    cursor: default;
+    border-color: #475569;
+    color: #94a3b8;
+    background: rgba(30, 41, 59, 0.85);
+    box-shadow: none;
+}
+
+.gear-supply-btn.gear-supply-active {
+    opacity: 1;
+    border-color: #06b6d4;
+    color: #06b6d4;
+    box-shadow: 0 0 12px rgba(6, 182, 212, 0.7), 0 0 24px rgba(6, 182, 212, 0.35);
+    animation: gearBtnPulse 1.2s ease-in-out infinite;
+}
+
+.gear-supply-btn.gear-supply-hidden {
+    display: none;
+}
+
+.gear-supply-icon {
+    font-style: normal;
+    pointer-events: none;
+}
+
+@keyframes gearBtnPulse {
+
+    0%,
+    100% {
+        box-shadow: 0 0 10px rgba(6, 182, 212, 0.6), 0 0 20px rgba(6, 182, 212, 0.3);
+    }
+
+    50% {
+        box-shadow: 0 0 18px rgba(6, 182, 212, 0.9), 0 0 36px rgba(6, 182, 212, 0.5);
+    }
+}
+
+/* Energy Bar Drain Animation */
+.energy-bar-fill.draining {
+    background: linear-gradient(to top,
+            rgba(6, 182, 212, 0.9) 0%,
+            rgba(6, 182, 212, 0.6) 50%,
+            rgba(6, 182, 212, 0.3) 100%) !important;
+    box-shadow: 0 0 15px rgba(6, 182, 212, 0.8),
+        0 0 30px rgba(6, 182, 212, 0.4),
+        inset 0 0 10px rgba(255, 255, 255, 0.2);
+    animation: energyDrainPulse 0.15s ease-in-out infinite;
+}
+
+@keyframes energyDrainPulse {
+
+    0%,
+    100% {
+        box-shadow: 0 0 15px rgba(6, 182, 212, 0.8),
+            0 0 30px rgba(6, 182, 212, 0.4),
+            inset 0 0 10px rgba(255, 255, 255, 0.2);
+    }
+
+    50% {
+        box-shadow: 0 0 20px rgba(6, 182, 212, 1),
+            0 0 40px rgba(6, 182, 212, 0.6),
+            inset 0 0 15px rgba(255, 255, 255, 0.3);
+    }
 }

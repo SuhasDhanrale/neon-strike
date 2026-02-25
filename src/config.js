@@ -52,3 +52,29 @@ export const SKILLS_CONFIG = {
   2: { id: 2, name: 'Smash', icon: '🔨', label: 'SMASH', baseCost: 40, mult: 1.25, heatCost: 30 },
   3: { id: 3, name: 'Void', icon: '🌀', label: 'VOID', baseCost: 80, mult: 1.4, heatCost: 30 }
 }
+
+// ============================================
+// GEAR SYSTEM CONFIG
+// 11 gears unlock sequentially via energy supply
+// Costs scale exponentially: BASE_COST × EXPONENT^i
+// Edit GEAR_COSTS array to fine-tune individual gears
+// ============================================
+export const GEAR_SYSTEM = {
+  BASE_COST: 100,
+  EXPONENT: 1.5,
+  // Pre-generated costs — edit these directly to set exact per-gear costs
+  GEAR_COSTS: Array.from({ length: 11 }, (_, i) => Math.round(100 * Math.pow(1.5, i))),
+  // [100, 150, 225, 338, 506, 759, 1139, 1709, 2563, 3845, 5767]
+
+  // Animation speed
+  SPEED_PER_GEAR: 0.23,      // Speed added per active gear
+  MAX_SPEED: 2.5,            // Max speed before overdrive
+  OVERDRIVE_SPEED: 8,        // Speed when all 11 gears active
+
+  // Effects
+  SPARK_COUNT: 45,           // Forge sparks particle count
+  GLITCH_THRESHOLD: 5,       // Active gears before glitch effects begin
+
+  // Persistence
+  STORAGE_KEY: 'neonStrike_activeGears',
+}

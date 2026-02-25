@@ -10,10 +10,19 @@ export function draw(ctx) {
   const heat = systemHeat / 100
 
   // ============================================
-  // 1. COAL BASE - darkest warm tone
+  // 1. GLASS BASE - translucent dark panel (glass effect)
   // ============================================
-  ctx.fillStyle = '#3d2010'
+  ctx.fillStyle = `rgba(10, 5, 2, 0.55)`
   ctx.fillRect(0, mainFloorY, canvas.width, chamberH)
+
+  // Glass top edge highlight
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.07)'
+  ctx.lineWidth = 1
+  ctx.setLineDash([])
+  ctx.beginPath()
+  ctx.moveTo(0, mainFloorY)
+  ctx.lineTo(canvas.width, mainFloorY)
+  ctx.stroke()
 
   // ============================================
   // 2. HALFTONE HEAT DOTS - real canvas dots, not gradient
@@ -22,10 +31,10 @@ export function draw(ctx) {
     ctx.save()
     ctx.globalAlpha = heat * 0.5
     ctx.fillStyle = '#e85d20'
-    
+
     const spacing = THEME.chamber.halftoneSpacing
     const dotR = THEME.chamber.halftoneDotR
-    
+
     for (let px = spacing / 2; px < canvas.width; px += spacing) {
       for (let py = mainFloorY + 8; py < canvas.height; py += spacing) {
         ctx.beginPath()
@@ -39,7 +48,7 @@ export function draw(ctx) {
   // ============================================
   // 3. FLOOR LINE - hard shadow behind, then colored dashed line
   // ============================================
-  
+
   // Shadow line (drawn first, offset)
   ctx.strokeStyle = '#1a1410'
   ctx.lineWidth = THEME.chamber.shadowWidth

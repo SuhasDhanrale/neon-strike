@@ -6,44 +6,49 @@ import { updateScreenShake } from './visuals/vfxHelpers.js'
 import { updateComboTimer } from './core/scoring.js'
 import { draw } from './visuals/renderer.js'
 import { SUBSTEPPING_ITERATIONS } from './config.js'
+import { GearBackground } from './visuals/Background/GearBackground.js'
+import { GearSystem } from './systems/GearSystem.js'
 
 let running = false
 let lastTime = 0
 
 function update() {
   if (State.isGameOver) return
-  
+
   // Sub-stepping for physics stability
   for (let s = 0; s < SUBSTEPPING_ITERATIONS; s++) {
     State.orbs.forEach(orb => orb.update())
     resolveCollisions()
   }
-  
+
   // Remove deleted orbs
   State.orbs = State.orbs.filter(orb => !orb.markedForDeletion)
-  
+
   // Update particles
   updateParticles()
-  
+
   // Update combo timer
   updateComboTimer()
-  
+
   // Update shot cooldown
   if (State.shotCooldown > 0) State.shotCooldown--
-  
+
   // Update screen shake
   updateScreenShake()
-  
+
   // Increment frame count
   State.frameCount++
 }
 
 function loop(timestamp) {
   if (!running) return
-  
+
   update()
   draw()
-  
+
+  // Update gear background each frame (driven by GearSystem)
+  GearBackground.update(GearSystem.getActiveGears())
+
   requestAnimationFrame(loop)
 }
 

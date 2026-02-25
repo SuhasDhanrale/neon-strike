@@ -9,6 +9,8 @@ import { resetGame, fillAmmoQueue } from './core/orbManager.js'
 import { FLOOR_OFFSET, SPAWN_Y } from './config.js'
 import { LeaderboardManager } from './leaderboard/leaderboardManager.js'
 import { LeaderboardUI } from './leaderboard/ui/leaderboardUI.js'
+import { GearBackground } from './visuals/Background/GearBackground.js'
+import { GearSystem } from './systems/GearSystem.js'
 
 function init() {
   // Canvas setup
@@ -39,6 +41,10 @@ function init() {
   if (lbToggleBtn) {
     lbToggleBtn.addEventListener('click', () => LeaderboardUI.toggle())
   }
+
+  // Init gear background (SVG, full-screen, persistent)
+  GearBackground.init()
+  GearSystem.init()
 
   // Check FTUE
   if (ftueManager.shouldRun()) {
