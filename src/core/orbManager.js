@@ -8,6 +8,8 @@ import {
 } from '../config.js'
 import { addHeat } from './heatSystem.js'
 import { updateUI } from '../visuals/uiRenderer.js'
+import { LeaderboardManager } from '../leaderboard/leaderboardManager.js'
+import { LeaderboardUI } from '../leaderboard/ui/leaderboardUI.js'
 
 export class Orb {
   constructor(x, y, typeIndex, isGeode = false, ammoConfig = AMMO_TYPES.STANDARD) {
@@ -255,7 +257,7 @@ export function spawnOrb(angle, power) {
   setTimeout(() => { State.canFire = true }, SHOT_COOLDOWN_MS)
 }
 
-function endGame() {
+async function endGame() {
   State.isGameOver = true
   if (State.score > State.bestScore) {
     State.bestScore = State.score
@@ -264,6 +266,18 @@ function endGame() {
   document.getElementById('final-score').innerText = State.score
   document.getElementById('game-over-screen').classList.add('active')
   EventBus.emit('game:over')
+
+  // Submit score to leaderboard (fire and forget)
+  LeaderboardManager.submit(State.score, {
+    heat: State.systemHeat
+  }).catch(err => {
+    console.warn('[Leaderboard] Submit failed:', err)
+  })
+
+  // Show leaderboard after brief delay
+  setTimeout(() => {
+    LeaderboardUI.showWithScore(State.score)
+  }, 800)
 }
 
 export function resetGame() {

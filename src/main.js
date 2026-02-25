@@ -7,6 +7,8 @@ import { initPowerups } from './powerups/powerupManager.js'
 import { ftueManager } from './ftue/ftueManager.js'
 import { resetGame, fillAmmoQueue } from './core/orbManager.js'
 import { FLOOR_OFFSET, SPAWN_Y } from './config.js'
+import { LeaderboardManager } from './leaderboard/leaderboardManager.js'
+import { LeaderboardUI } from './leaderboard/ui/leaderboardUI.js'
 
 function init() {
   // Canvas setup
@@ -25,6 +27,18 @@ function init() {
 
   // Expose resetGame globally for the game-over button
   window.resetGame = resetGame
+
+  // Init leaderboard (non-blocking - game starts regardless)
+  LeaderboardManager.init().catch(err => {
+    console.warn('[Leaderboard] Init failed silently:', err)
+  })
+  LeaderboardUI.init()
+
+  // Wire leaderboard toggle button
+  const lbToggleBtn = document.getElementById('lb-toggle-btn')
+  if (lbToggleBtn) {
+    lbToggleBtn.addEventListener('click', () => LeaderboardUI.toggle())
+  }
 
   // Check FTUE
   if (ftueManager.shouldRun()) {
