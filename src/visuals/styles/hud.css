@@ -1,0 +1,383 @@
+/* ============================================
+   NEON STRIKE — HUD REDESIGN STYLES
+   ============================================ */
+
+/* ============================================
+   1. TOP ROW — Score + Level
+   ============================================ */
+
+.hud-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+    pointer-events: none;
+}
+
+.hud-top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px 0 16px;
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+    box-sizing: border-box;
+}
+
+.hud-label {
+    color: #666;
+    font-size: 0.55rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 2px;
+}
+
+.hud-score,
+.hud-level {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.hud-score {
+    align-items: flex-start;
+}
+
+.hud-level {
+    align-items: flex-end;
+}
+
+.hud-score-value {
+    color: #fff;
+    font-size: 1.4rem;
+    font-weight: 900;
+    transition: text-shadow 0.3s;
+}
+
+.hud-score-value.combo-glow {
+    text-shadow: 0 0 15px #ffd700, 0 0 30px #ffd700;
+}
+
+.hud-level-value {
+    color: #fff;
+    font-size: 1.4rem;
+    font-weight: 900;
+}
+
+/* ============================================
+   2. HEAT BAR — Primary danger indicator
+   ============================================ */
+
+.hud-heat-container {
+    width: calc(100% - 16px);
+    max-width: 384px;
+    height: 18px;
+    background: rgba(30, 0, 0, 0.8);
+    border-radius: 4px;
+    margin: 10px auto 0 auto;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(255, 0, 60, 0.4);
+}
+
+.heat-bar-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #ff6b00, #ff003c);
+    box-shadow: 0 0 8px rgba(255, 0, 60, 0.4);
+    transition: width 0.2s ease-out;
+    border-radius: 3px;
+}
+
+/* Heat pulse states */
+.heat-bar-fill.heat-calm {
+    animation: none;
+}
+
+.heat-bar-fill.heat-warning {
+    animation: heat-pulse-warn 1.5s ease-in-out infinite;
+}
+
+.heat-bar-fill.heat-critical {
+    animation: heat-pulse-critical 0.4s ease-in-out infinite;
+}
+
+.heat-bar-fill.heat-erupting {
+    animation: heat-erupt 0.3s ease-out;
+}
+
+@keyframes heat-pulse-warn {
+    0%   { box-shadow: 0 0 6px rgba(255, 0, 60, 0.3); }
+    50%  { box-shadow: 0 0 20px rgba(255, 0, 60, 0.8), 0 0 40px rgba(255, 0, 60, 0.3); }
+    100% { box-shadow: 0 0 6px rgba(255, 0, 60, 0.3); }
+}
+
+@keyframes heat-pulse-critical {
+    0%   { box-shadow: 0 0 15px rgba(255, 0, 60, 0.9), 0 0 30px rgba(255, 0, 60, 0.5); transform: translateX(0); }
+    25%  { transform: translateX(-2px); }
+    75%  { transform: translateX(2px); }
+    100% { box-shadow: 0 0 15px rgba(255, 0, 60, 0.9), 0 0 30px rgba(255, 0, 60, 0.5); transform: translateX(0); }
+}
+
+@keyframes heat-erupt {
+    0%   { filter: brightness(1); }
+    50%  { filter: brightness(3); box-shadow: 0 0 60px rgba(255, 0, 60, 1); }
+    100% { filter: brightness(1); }
+}
+
+/* ============================================
+   3. ENERGY BAR — Secondary strategic indicator
+   ============================================ */
+
+.hud-energy-container {
+    width: calc(100% - 16px);
+    max-width: 384px;
+    height: 8px;
+    background: rgba(0, 10, 20, 0.8);
+    border-radius: 4px;
+    margin: 4px auto 0 auto;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(0, 243, 255, 0.15);
+}
+
+.energy-bar-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #0088aa, #00f3ff);
+    box-shadow: 0 0 6px rgba(0, 243, 255, 0.3);
+    transition: width 0.15s linear;
+    border-radius: 3px;
+}
+
+.energy-bar-fill.energy-full {
+    animation: energy-full-flash 0.6s ease-out forwards;
+}
+
+.energy-bar-fill.energy-empty {
+    opacity: 0.2;
+    box-shadow: none;
+}
+
+@keyframes energy-full-flash {
+    0%   { box-shadow: 0 0 6px rgba(0, 243, 255, 0.3); }
+    50%  { box-shadow: 0 0 20px rgba(0, 243, 255, 1), 0 0 40px rgba(188, 19, 254, 0.6); }
+    100% { box-shadow: 0 0 12px rgba(0, 243, 255, 0.6); }
+}
+
+/* ============================================
+   4. NEXT SHOT — The player's most immediate decision
+   ============================================ */
+
+.hud-next-shot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 12px;
+}
+
+#next-shot-orb {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    border: 3px solid var(--orb-color, #00f3ff);
+    background: radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.15), #000);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: next-orb-ready 2s ease-in-out infinite;
+    transition: opacity 0.2s, border-color 0.15s;
+    position: relative;
+    box-shadow: 0 0 8px var(--orb-color, #00f3ff);
+}
+
+#next-shot-orb.cooling {
+    opacity: 0.35;
+    animation: none;
+}
+
+#next-shot-value {
+    color: #fff;
+    font-size: 1rem;
+    font-weight: bold;
+    text-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
+}
+
+#next-shot-ammo-icon {
+    position: absolute;
+    font-size: 0.8rem;
+    bottom: -4px;
+    right: -4px;
+    text-shadow: 0 0 5px #000;
+}
+
+@keyframes next-orb-ready {
+    0%   { box-shadow: 0 0 8px var(--orb-color, #00f3ff); }
+    50%  { box-shadow: 0 0 18px var(--orb-color, #00f3ff), 0 0 30px rgba(255, 255, 255, 0.1); }
+    100% { box-shadow: 0 0 8px var(--orb-color, #00f3ff); }
+}
+
+/* ============================================
+   5. SKILLS BAR — State via visuals, not text
+   ============================================ */
+
+.skills-bar {
+    position: absolute;
+    top: 80px;
+    right: 16px;
+    bottom: auto;
+    left: auto;
+    transform: none;
+    width: auto;
+    max-width: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 16px;
+    padding: 0;
+    pointer-events: auto;
+    z-index: 20;
+}
+
+.skill-wrapper {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.skill-btn {
+    width: 56px;
+    height: 56px;
+    border-radius: 12px;
+    border: 2px solid transparent;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.25s, box-shadow 0.25s, opacity 0.25s;
+}
+
+/* State: Locked */
+.skill-btn.locked {
+    border-color: #222;
+    opacity: 0.4;
+    cursor: default;
+}
+
+/* State: Affordable */
+.skill-btn.affordable {
+    border-color: var(--skill-color);
+    box-shadow: 0 0 12px rgba(var(--skill-color-rgb), 0.35);
+    opacity: 1;
+    cursor: pointer;
+}
+
+.skill-btn.affordable:active {
+    transform: scale(0.95);
+}
+
+/* State: Unaffordable */
+.skill-btn.unaffordable {
+    border-color: #333;
+    box-shadow: none;
+    opacity: 0.55;
+    filter: saturate(0.3);
+    cursor: default;
+}
+
+/* State: Cooldown */
+.skill-btn.cooldown {
+    opacity: 0.6;
+}
+
+.skill-lock-icon {
+    font-size: 1.2rem;
+    position: absolute;
+}
+
+.skill-btn:not(.locked) .skill-lock-icon {
+    display: none;
+}
+
+.skill-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.skill-btn:not(.locked) .skill-content {
+    opacity: 1;
+}
+
+.skill-icon {
+    font-size: 1.1rem;
+    margin-bottom: 1px;
+}
+
+.skill-label {
+    font-size: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #fff;
+}
+
+/* Cost badge — hidden by default, shown on hover/long-press */
+.skill-cost-badge {
+    position: absolute;
+    right: -8px;
+    top: 50%;
+    transform: translateY(-50%);
+    left: auto;
+    bottom: auto;
+    background: rgba(188, 19, 254, 0.9);
+    color: white;
+    font-size: 0.65rem;
+    padding: 2px 6px;
+    border-radius: 8px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+    white-space: nowrap;
+    font-weight: bold;
+}
+
+.skill-cost-badge.high-cost {
+    background: rgba(255, 0, 60, 0.9);
+}
+
+/* Reveal on hover (desktop) */
+.skill-wrapper:hover .skill-cost-badge {
+    opacity: 1;
+}
+
+/* Reveal on long-press (mobile) — JS adds .show-cost class */
+.skill-wrapper.show-cost .skill-cost-badge {
+    opacity: 1;
+}
+
+/* Cooldown sweep animation */
+.skill-cooldown-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: conic-gradient(from 0deg, transparent 0%, transparent var(--cooldown-pct, 0%), rgba(0, 0, 0, 0.7) var(--cooldown-pct, 0%), rgba(0, 0, 0, 0.7) 100%);
+    border-radius: 14px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.skill-btn.cooldown .skill-cooldown-overlay {
+    opacity: 1;
+}

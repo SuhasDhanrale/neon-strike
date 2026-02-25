@@ -1,0 +1,1532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Neon Strike: Kinetic Merge</title>
+    <meta name="description" content="Arcade physics merge game. Manage geothermal pressure and utilize tactical ammo.">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700;900&display=swap');
+
+        :root {
+            --bg-color: #050505;
+            --ui-color: #ffffff;
+            --accent-color: #00f3ff;
+            --danger-color: #ff003c;
+            --gold-color: #ffd700;
+            --purple-color: #bc13fe;
+            --frost-color: #a0eeff;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            overflow: hidden;
+            font-family: 'Rajdhani', sans-serif;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            background: radial-gradient(circle at center, #1a1a2e 0%, #000000 100%);
+            overflow: hidden;
+            transition: background 0.2s;
+        }
+
+        /* Eruption Visuals */
+        #game-container.eruption {
+            background: radial-gradient(circle at bottom, #3a0000 0%, #000000 100%);
+        }
+        
+        #game-container.eruption canvas {
+            box-shadow: 0 50px 100px rgba(255, 60, 0, 0.3) inset;
+        }
+
+        canvas {
+            box-shadow: 0 0 50px rgba(0, 243, 255, 0.1);
+            border-top: 2px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 2px solid transparent;
+            transition: box-shadow 0.5s, border-bottom 0.5s;
+        }
+
+        /* Gravity Vignette */
+        #gravity-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: radial-gradient(circle, transparent 50%, rgba(255, 0, 60, 0) 100%);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            z-index: 2;
+        }
+
+        #ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 20px;
+            box-sizing: border-box;
+            z-index: 10;
+        }
+
+        .header {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+            pointer-events: none;
+        }
+
+        .top-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .score-box {
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            padding: 5px 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+            min-width: 70px;
+        }
+
+        .score-label {
+            color: #888;
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .score-value {
+            color: var(--ui-color);
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+        
+        /* Status Indicator */
+        #status-display {
+            font-size: 0.7rem;
+            font-weight: bold;
+            color: var(--accent-color);
+            text-shadow: 0 0 10px var(--accent-color);
+            margin-top: 2px;
+            transition: color 0.3s;
+        }
+        
+        .status-grace {
+            color: var(--accent-color) !important;
+            text-shadow: 0 0 10px var(--accent-color) !important;
+        }
+
+        .status-heating {
+            color: #ff8c00 !important;
+            text-shadow: 0 0 10px #ff8c00 !important;
+        }
+
+        .status-critical {
+            color: var(--danger-color) !important;
+            text-shadow: 0 0 10px var(--danger-color) !important;
+            animation: pulse-red 0.5s infinite;
+        }
+
+        @keyframes pulse-red {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        /* --- CENTERED NEXT ORB DISPLAY --- */
+        #next-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+        }
+
+        .next-label {
+            color: #888;
+            font-size: 0.6rem;
+            margin-bottom: 4px;
+            letter-spacing: 1px;
+        }
+
+        .next-queue {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .next-slot {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.8rem;
+            color: #fff;
+            font-weight: bold;
+            box-shadow: 0 0 10px rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.2);
+            position: relative;
+            background: #000;
+            transition: transform 0.2s;
+        }
+
+        .next-slot.small {
+            width: 24px;
+            height: 24px;
+            opacity: 0.7;
+            font-size: 0.6rem;
+        }
+
+        /* Ammo Icon Overlay */
+        .ammo-icon-overlay {
+            position: absolute;
+            font-size: 1rem;
+            text-shadow: 0 0 5px #000;
+            z-index: 2;
+        }
+        
+        .next-slot.small .ammo-icon-overlay { font-size: 0.8rem; }
+
+        /* Energy Bar */
+        .xp-container {
+            width: 100%;
+            height: 10px;
+            background: rgba(20, 20, 20, 0.8);
+            border-radius: 5px;
+            margin-top: 10px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .xp-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--accent-color), var(--purple-color));
+            box-shadow: 0 0 10px var(--accent-color);
+            transition: width 0.1s linear;
+        }
+        
+        .xp-text {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            top: -1px;
+            line-height: 10px;
+            font-size: 0.5rem;
+            color: rgba(255,255,255,0.9);
+            text-shadow: 0 0 2px #000;
+            letter-spacing: 1px;
+        }
+
+        /* Heat Bar */
+        .heat-container {
+            width: 100%;
+            height: 10px;
+            background: rgba(20, 20, 20, 0.8);
+            border-radius: 5px;
+            margin-top: 8px; /* Spacing */
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255, 60, 0, 0.3);
+        }
+
+        .heat-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #ff8c00, #ff003c);
+            box-shadow: 0 0 10px #ff003c;
+            transition: width 0.2s ease-out;
+        }
+        
+        .heat-text {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            top: -1px;
+            line-height: 10px;
+            font-size: 0.5rem;
+            color: rgba(255,255,255,0.9);
+            text-shadow: 0 0 2px #000;
+            letter-spacing: 1px;
+        }
+
+        /* Abilities Bar */
+        .abilities-container {
+            position: absolute;
+            bottom: 30px;
+            width: 100%;
+            max-width: 400px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            pointer-events: auto;
+            z-index: 20;
+        }
+
+        .ability-wrapper {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .ability-btn {
+            background: rgba(0, 0, 0, 0.85);
+            border: 2px solid #333;
+            color: #555;
+            border-radius: 12px;
+            width: 70px;
+            height: 70px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: bold;
+            cursor: default;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.2s;
+        }
+
+        .ability-btn.unlocked {
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.1);
+        }
+
+        .ability-btn.unlocked:active { transform: scale(0.95); }
+
+        .cost-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: var(--purple-color);
+            color: white;
+            font-size: 0.75rem;
+            min-width: 24px;
+            height: 24px;
+            border-radius: 12px;
+            padding: 0 4px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid #000;
+            z-index: 2;
+            opacity: 0;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        
+        .cost-badge.high-cost { background-color: var(--danger-color); }
+        .ability-btn.unlocked ~ .cost-badge { opacity: 1; }
+
+        .lock-icon { font-size: 1.5rem; position: absolute; }
+
+        .ability-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .ability-btn.unlocked .ability-content { opacity: 1; }
+        .ability-btn.unlocked .lock-icon { display: none; }
+
+        .ability-icon { font-size: 1.4rem; margin-bottom: 2px; }
+        .ability-label { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 1px; }
+
+        .disabled-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            transition: opacity 0.2s;
+            pointer-events: none;
+            opacity: 0;
+        }
+        
+        .ability-btn.unlocked.cannot-afford .disabled-overlay { opacity: 1; }
+
+        #game-over-screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            pointer-events: auto; opacity: 0; visibility: hidden; transition: opacity 0.3s; z-index: 50;
+        }
+        #game-over-screen.active { opacity: 1; visibility: visible; }
+
+        .btn {
+            background: linear-gradient(45deg, #00f3ff, #0066ff);
+            color: white; border: none; padding: 15px 40px;
+            font-size: 1.2rem; font-weight: bold; border-radius: 30px;
+            cursor: pointer; text-transform: uppercase; letter-spacing: 2px;
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.4);
+            font-family: 'Rajdhani', sans-serif; margin-top: 20px;
+        }
+
+        #combo-display {
+            position: absolute; top: 35%; left: 50%;
+            transform: translate(-50%, -50%) scale(0) rotate(-15deg);
+            font-size: 8rem; font-weight: 900; font-style: italic;
+            color: #fff;
+            text-shadow: 0 0 0 #ffd700, 0 0 30px #ffd700, 0 0 60px #ff003c;
+            opacity: 0; pointer-events: none; z-index: 20;
+            transition: transform 0.15s, opacity 0.1s; letter-spacing: -5px;
+        }
+
+        .tutorial {
+            position: absolute; bottom: 120px; width: 100%; text-align: center;
+            color: rgba(255,255,255,0.5); font-size: 0.9rem; pointer-events: none;
+            animation: pulse 2s infinite;
+        }
+
+        #level-toast {
+            position: absolute; top: 20%; left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid var(--accent-color);
+            padding: 20px 40px; border-radius: 20px;
+            backdrop-filter: blur(10px); text-align: center;
+            pointer-events: none; z-index: 30;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s;
+            opacity: 0;
+        }
+        #level-toast.active { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        
+        .toast-title { color: var(--accent-color); font-size: 1.5rem; font-weight: bold; margin-bottom: 5px; }
+        .toast-desc { color: #fff; font-size: 1rem; }
+
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <canvas id="gameCanvas"></canvas>
+    <div id="gravity-overlay"></div>
+    <div id="combo-display">×2</div>
+
+    <div id="level-toast">
+        <div class="toast-title">SYSTEM WARNING</div>
+        <div class="toast-desc" id="toast-message">Gravity Increasing...</div>
+    </div>
+
+    <div id="ui-layer">
+        <div class="header">
+            <!-- Top Row: Score | Next | Level -->
+            <div class="top-row">
+                <div class="score-box">
+                    <div class="score-label">Score</div>
+                    <div class="score-value" id="score">0</div>
+                </div>
+                
+                <!-- Center Next Orb Display -->
+                <div id="next-container">
+                    <div class="next-label">NEXT</div>
+                    <div class="next-queue">
+                        <!-- Next 1 -->
+                        <div class="next-slot" id="ammo-next-1">
+                            <span class="ammo-icon-overlay" id="ammo-icon-1"></span>
+                        </div>
+                        <!-- Next 2 -->
+                        <div class="next-slot small" id="ammo-next-2">
+                            <span class="ammo-icon-overlay" id="ammo-icon-2"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="score-box">
+                    <div class="score-label">Level</div>
+                    <div class="score-value" id="level-value">1</div>
+                    <div id="status-display">STABLE</div>
+                </div>
+            </div>
+            
+            <!-- Bars -->
+            <div class="xp-container">
+                <div class="xp-bar" id="xp-bar"></div>
+                <div class="xp-text" id="xp-text">ENERGY: 0 / 100</div>
+            </div>
+
+            <div class="heat-container">
+                <div class="heat-bar" id="heat-bar"></div>
+                <div class="heat-text" id="heat-text">HEAT: 0%</div>
+            </div>
+        </div>
+        
+        <div class="tutorial" id="tutorial-text">Keep Orb Volume Down • High Heat = Eruption</div>
+        
+        <div class="abilities-container">
+            <!-- Skill 1: Shake -->
+            <div class="ability-wrapper">
+                <div id="skill-1" class="ability-btn unlocked" onclick="useSkill(1)">
+                    <div class="lock-icon">🔒</div>
+                    <div class="ability-content">
+                        <span class="ability-icon">⚡</span>
+                        <span class="ability-label">SHAKE</span>
+                    </div>
+                    <div class="disabled-overlay"></div>
+                </div>
+                <div class="cost-badge" id="cost-1">15</div>
+            </div>
+
+            <!-- Skill 2: Smash -->
+            <div class="ability-wrapper">
+                <div id="skill-2" class="ability-btn" onclick="useSkill(2)">
+                    <div class="lock-icon">🔒</div>
+                    <div class="ability-content">
+                        <span class="ability-icon">🔨</span>
+                        <span class="ability-label">SMASH</span>
+                    </div>
+                    <div class="disabled-overlay"></div>
+                </div>
+                <div class="cost-badge" id="cost-2">40</div>
+            </div>
+
+            <!-- Skill 3: Void -->
+            <div class="ability-wrapper">
+                <div id="skill-3" class="ability-btn" onclick="useSkill(3)">
+                    <div class="lock-icon">🔒</div>
+                    <div class="ability-content">
+                        <span class="ability-icon">🌀</span>
+                        <span class="ability-label">VOID</span>
+                    </div>
+                    <div class="disabled-overlay"></div>
+                </div>
+                <div class="cost-badge" id="cost-3">80</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="game-over-screen">
+        <h1 style="color: #ff003c; text-shadow: 0 0 20px #ff003c;">CRITICAL ERROR</h1>
+        <p>System Overloaded</p>
+        <p>Final Score: <span id="final-score">0</span></p>
+        <button class="btn" onclick="resetGame()">Reboot System</button>
+    </div>
+</div>
+
+<script>
+/**
+ * Game Logic V17.0 - "The Geothermal Chamber"
+ * - Added a distinct "Sub-Floor" (Chamber) below the main play area.
+ * - Active orbs bounce on the Main Floor.
+ * - Frosted Orbs spawn and wait securely inside the Chamber.
+ * - Eruption "Thaws" and shoots the Chamber Orbs up into the main bucket.
+ */
+
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const scoreEl = document.getElementById('score');
+const levelValueEl = document.getElementById('level-value');
+const statusDisplay = document.getElementById('status-display');
+const finalScoreEl = document.getElementById('final-score');
+const gameOverScreen = document.getElementById('game-over-screen');
+const tutorialText = document.getElementById('tutorial-text');
+const comboDisplay = document.getElementById('combo-display');
+const xpBar = document.getElementById('xp-bar');
+const xpText = document.getElementById('xp-text');
+const heatBar = document.getElementById('heat-bar');
+const heatText = document.getElementById('heat-text');
+const levelToast = document.getElementById('level-toast');
+const toastMessage = document.getElementById('toast-message');
+const container = document.getElementById('game-container');
+const ammoNext1 = document.getElementById('ammo-next-1');
+const ammoNext2 = document.getElementById('ammo-next-2');
+const ammoIcon1 = document.getElementById('ammo-icon-1');
+const ammoIcon2 = document.getElementById('ammo-icon-2');
+
+// Configuration
+let GAME_HEIGHT = 800;
+let SCALE = 1;
+const NORMAL_GRAVITY = 0.5;
+let GRAVITY = NORMAL_GRAVITY;
+const FRICTION = 0.99;
+const SPAWN_Y = 200; 
+const MAX_POWER = 35; 
+
+// --- NEW: CHAMBER CONFIG ---
+const FLOOR_OFFSET = 80; // The height of the Geothermal Strip at the bottom
+let mainFloorY = GAME_HEIGHT - FLOOR_OFFSET;
+
+// RPG / Energy / Heat State
+let level = 1;
+let currentEnergy = 0;
+let maxEnergy = 100; 
+let systemHeat = 0; // 0-100%
+
+// Grace State
+let graceMoves = 0; 
+
+// Aiming State
+let isAiming = false;
+let aimStart = {x: 0, y: 0};
+let aimCurrent = {x: 0, y: 0};
+let shooterPos = {x: 0, y: SPAWN_Y};
+
+// AMMO CONFIG
+const AMMO = {
+    STANDARD: { id: 'STANDARD', icon: '', color: '#fff', prob: 1.0 },
+    PIERCE:   { id: 'PIERCE',   icon: '🔻', color: '#f0f', prob: 0.0 } 
+};
+
+// Queue
+let ammoQueue = []; 
+
+// Skills Config
+const SKILLS = {
+    1: { id: 1, name: 'Shake', baseCost: 15, currentCost: 15, mult: 1.3, unlockLevel: 1 },
+    2: { id: 2, name: 'Smash', baseCost: 40, currentCost: 40, mult: 1.25, unlockLevel: 2 },
+    3: { id: 3, name: 'Void',  baseCost: 80, currentCost: 80, mult: 1.4, unlockLevel: 4 }
+};
+
+// Game State
+let orbs = [];
+let particles = [];
+let floatingTexts = [];
+let score = 0;
+let bestScore = localStorage.getItem('neonDropBest') || 0;
+let isGameOver = false;
+let canFire = true;
+let shotCooldown = 0;
+
+let screenShake = 0;
+let comboCount = 0;
+let comboTimer = 0;
+
+// Orb Types
+const ORB_TYPES = [
+    { value: 2, radius: 20, color: '#00f3ff', glow: '#00f3ff' },
+    { value: 4, radius: 26, color: '#00ff41', glow: '#00ff41' },
+    { value: 8, radius: 32, color: '#ffe600', glow: '#ffe600' },
+    { value: 16, radius: 38, color: '#ff8c00', glow: '#ff8c00' },
+    { value: 32, radius: 44, color: '#ff003c', glow: '#ff003c' },
+    { value: 64, radius: 50, color: '#d600ff', glow: '#d600ff' },
+    { value: 128, radius: 56, color: '#ffffff', glow: '#ffffff' },
+    { value: 256, radius: 62, color: '#00f3ff', glow: '#00f3ff' },
+    { value: 512, radius: 68, color: '#00ff41', glow: '#00ff41' },
+    { value: 1024, radius: 74, color: '#ffe600', glow: '#ffe600' },
+    { value: 2048, radius: 80, color: '#ff003c', glow: '#ff003c' }
+];
+
+function resize() {
+    if (container.clientWidth > 600) {
+        canvas.width = 400; 
+        canvas.height = container.clientHeight * 0.95;
+    } else {
+        canvas.width = container.clientWidth;
+        canvas.height = container.clientHeight;
+    }
+    GAME_HEIGHT = canvas.height;
+    mainFloorY = GAME_HEIGHT - FLOOR_OFFSET; // Update floor pos
+    SCALE = canvas.width / 500; 
+    shooterPos = {x: canvas.width/2, y: SPAWN_Y};
+}
+window.addEventListener('resize', resize);
+resize();
+
+// Input
+canvas.addEventListener('mousedown', startAim);
+canvas.addEventListener('touchstart', startAim, {passive: false});
+window.addEventListener('mousemove', moveAim);
+window.addEventListener('touchmove', moveAim, {passive: false});
+window.addEventListener('mouseup', endAim);
+window.addEventListener('touchend', endAim);
+
+function getPos(e) {
+    const rect = canvas.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    return { x: clientX - rect.left, y: clientY - rect.top };
+}
+
+function startAim(e) {
+    if (isGameOver || !canFire || e.target.closest('.ability-btn')) return;
+    e.preventDefault();
+    isAiming = true;
+    const pos = getPos(e);
+    aimStart = pos;
+    aimCurrent = pos;
+    tutorialText.style.display = 'none';
+}
+
+function moveAim(e) {
+    if (!isAiming) return;
+    e.preventDefault();
+    aimCurrent = getPos(e);
+}
+
+function endAim(e) {
+    if (!isAiming) return;
+    isAiming = false;
+    
+    const dx = aimStart.x - aimCurrent.x;
+    const dy = aimStart.y - aimCurrent.y;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    
+    if (dist > 20) { 
+        let power = Math.min(dist * 0.15, MAX_POWER);
+        let angle = Math.atan2(dy, dx);
+        spawnOrb(angle, power);
+    }
+}
+
+class Orb {
+    constructor(x, y, typeIndex, isGeode = false, ammoConfig = AMMO.STANDARD) {
+        this.x = x;
+        this.y = y;
+        this.vx = 0;
+        this.vy = 0;
+        this.typeIndex = typeIndex;
+        
+        this.isGeode = isGeode;
+        
+        // --- NEW: Chamber Status ---
+        this.inChamber = false; // Is it in the strip below?
+        this.isFrosted = false; 
+        
+        this.ammoType = ammoConfig.id;
+        this.ghostTimer = 0; 
+        this.hasCollided = false;
+
+        if (isGeode) {
+            this.radius = 40 * SCALE;
+            this.color = '#555';
+            this.glow = '#000';
+            this.value = 0;
+            this.mass = this.radius * 2;
+            this.hp = 2;
+        } else {
+            this.radius = ORB_TYPES[typeIndex].radius * SCALE;
+            this.color = ORB_TYPES[typeIndex].color;
+            this.glow = ORB_TYPES[typeIndex].glow;
+            this.value = ORB_TYPES[typeIndex].value;
+            this.mass = this.radius;
+        }
+        
+        if (this.ammoType === 'PIERCE') {
+            this.ghostTimer = 60; 
+            this.glow = '#ff00ff';
+        }
+        
+        this.markedForDeletion = false;
+    }
+
+    update() {
+        this.vy += GRAVITY; 
+        this.vx *= FRICTION;
+        this.vy *= FRICTION;
+        this.x += this.vx;
+        this.y += this.vy;
+        
+        if (this.ghostTimer > 0) this.ghostTimer--;
+
+        // Dynamic Floor Check
+        // If in Chamber, floor is actual bottom. If active, floor is the main line.
+        let targetFloorY = this.inChamber ? GAME_HEIGHT : mainFloorY;
+
+        if (this.y + this.radius > targetFloorY) {
+            this.y = targetFloorY - this.radius;
+            this.vy *= -0.5; 
+            this.vx *= 0.9;
+            this.hasCollided = true;
+            this.ghostTimer = 0; 
+        }
+
+        // Walls
+        if (this.x - this.radius < 0) {
+            this.x = this.radius;
+            this.vx *= -0.5;
+            this.ghostTimer = 0;
+        } else if (this.x + this.radius > canvas.width) {
+            this.x = canvas.width - this.radius;
+            this.vx *= -0.5;
+            this.ghostTimer = 0;
+        }
+        
+        // Ceiling Bounce
+        if (this.y - this.radius < 0) {
+            this.y = this.radius;
+            this.vy *= -0.5;
+        }
+        
+        // Game Over Logic (Only applies to ACTIVE orbs, not chamber orbs)
+        if (!this.inChamber && this.vy > -0.1 && this.vy < 0.1 && this.y + this.radius < SPAWN_Y - 20 && !isAiming && this.hasCollided) {
+             if (orbs.filter(o => !o.inChamber).length > 5 && shotCooldown <= 0) endGame();
+        }
+    }
+
+    draw() {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = this.glow;
+        ctx.beginPath();
+        ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
+        
+        if (this.isGeode) {
+            ctx.fillStyle = '#222';
+            ctx.fill();
+            ctx.strokeStyle = '#888';
+            ctx.lineWidth = 4;
+            ctx.stroke();
+            if (this.hp < 2) {
+                ctx.strokeStyle = '#00f3ff';
+                ctx.beginPath(); ctx.moveTo(-15, -15); ctx.lineTo(15, 15); ctx.stroke();
+            }
+        } else {
+            if (this.isFrosted) {
+                ctx.fillStyle = 'rgba(160, 238, 255, 0.2)'; 
+            } else {
+                ctx.fillStyle = '#000';
+            }
+            ctx.fill();
+            
+            if (this.ammoType === 'PIERCE' && this.ghostTimer > 0) {
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = '#f0f';
+                ctx.setLineDash([2, 2]); 
+            } else if (this.isFrosted) {
+                ctx.lineWidth = 4;
+                ctx.strokeStyle = 'var(--frost-color)'; 
+                ctx.shadowColor = 'var(--frost-color)';
+            } else {
+                ctx.lineWidth = 3;
+                ctx.strokeStyle = this.color;
+            }
+            
+            ctx.stroke();
+            ctx.setLineDash([]); 
+            
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = '#fff';
+            if (this.isFrosted) ctx.fillStyle = 'var(--frost-color)';
+            
+            ctx.font = `bold ${this.radius * 0.8}px Rajdhani`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            ctx.fillText(this.value, 0, 2);
+        }
+        ctx.restore();
+    }
+}
+
+class Particle {
+    constructor(x, y, color) {
+        this.x = x;
+        this.y = y;
+        this.color = color;
+        this.vx = (Math.random() - 0.5) * 15;
+        this.vy = (Math.random() - 0.5) * 15;
+        this.life = 1.0;
+        this.size = Math.random() * 4 + 2;
+    }
+    update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        this.life -= 0.03;
+    }
+    draw() {
+        ctx.globalAlpha = this.life;
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI*2);
+        ctx.fill();
+        ctx.globalAlpha = 1.0;
+    }
+}
+
+class FloatingText {
+    constructor(x, y, text, color, size = 20) {
+        this.x = x;
+        this.y = y;
+        this.text = text;
+        this.color = color;
+        this.vy = -3;
+        this.life = 1.0;
+        this.size = size;
+        this.scale = 1;
+    }
+    update() {
+        this.y += this.vy;
+        this.life -= 0.02;
+        if(this.life > 0.8) this.scale += 0.1;
+        else this.scale -= 0.01;
+    }
+    draw() {
+        ctx.globalAlpha = this.life;
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.scale(this.scale, this.scale);
+        ctx.fillStyle = this.color;
+        ctx.shadowColor = '#000';
+        ctx.shadowBlur = 4;
+        ctx.font = `900 ${this.size}px Rajdhani`;
+        ctx.textAlign = 'center';
+        ctx.fillText(this.text, 0, 0);
+        ctx.restore();
+        ctx.globalAlpha = 1.0;
+    }
+}
+
+// Logic
+function fillAmmoQueue() {
+    while(ammoQueue.length < 3) {
+        ammoQueue.push({ config: AMMO.STANDARD, orbType: Math.floor(Math.random() * 3) });
+    }
+    updateAmmoUI();
+}
+
+function awardAmmo(type) {
+    ammoQueue.unshift({ config: type, orbType: Math.floor(Math.random() * 3) });
+    if (ammoQueue.length > 3) ammoQueue.pop();
+    updateAmmoUI();
+    createFloatingText(shooterPos.x, shooterPos.y + 50, "PIERCING ROUND!", type.color, 30);
+    screenShake = 10;
+}
+
+function updateAmmoUI() {
+    if(ammoQueue.length < 3) return;
+    
+    const updateSlot = (element, iconElement, queueItem) => {
+        let type = ORB_TYPES[queueItem.orbType];
+        let ammo = queueItem.config;
+        
+        element.style.borderColor = type.color;
+        element.style.backgroundColor = '#000';
+        element.style.boxShadow = `0 0 10px ${type.glow}`;
+        element.innerText = type.value;
+        element.style.color = '#fff';
+        element.style.fontFamily = "'Rajdhani', sans-serif";
+        element.style.fontWeight = 'bold';
+        
+        iconElement.innerText = ammo.icon;
+        
+        if(ammo.id !== 'STANDARD') {
+            element.style.borderColor = ammo.color;
+            element.style.boxShadow = `0 0 15px ${ammo.color}`;
+        }
+    };
+
+    updateSlot(ammoNext1, ammoIcon1, ammoQueue[1]);
+    updateSlot(ammoNext2, ammoIcon2, ammoQueue[2]);
+}
+
+function spawnOrb(angle, power) {
+    if (!canFire) return;
+    
+    let shotData = ammoQueue.shift();
+    fillAmmoQueue(); 
+    
+    let isGeode = Math.random() < 0.04; 
+    
+    const orb = new Orb(shooterPos.x, shooterPos.y, shotData.orbType, isGeode, shotData.config);
+    orb.vx = Math.cos(angle) * power;
+    orb.vy = Math.sin(angle) * power;
+    
+    orbs.push(orb);
+    canFire = false;
+    shotCooldown = 30;
+    
+    // --- GEOTHERMAL HEAT MECHANIC ---
+    if (graceMoves > 0) {
+        graceMoves--;
+    } else {
+        // Calculate Population Density (ignore Geodes and Chamber orbs)
+        let activeCount = orbs.filter(o => !o.isGeode && !o.inChamber).length;
+        
+        if (activeCount >= 22) systemHeat += 15; // Critical mass
+        else if (activeCount >= 16) systemHeat += 8;  // Heating up
+        else if (activeCount >= 10) systemHeat += 3;  // Slow burn
+        else systemHeat -= 5; // Cooling (low population)
+        
+        systemHeat = Math.max(0, Math.min(100, systemHeat));
+        
+        if (systemHeat >= 100) {
+            triggerEruption();
+        }
+    }
+    
+    updateUI(); 
+    setTimeout(() => { canFire = true; }, 500);
+}
+
+// === ERUPTION LOGIC ===
+
+function triggerEruption() {
+    systemHeat = 0; 
+    graceMoves = 5; 
+    
+    let thawedCount = 0;
+    
+    // 1. Launch active orbs
+    orbs.forEach(orb => {
+        if (!orb.inChamber) {
+            orb.vy = -15 - (Math.random() * 10);
+            orb.vx += (Math.random() - 0.5) * 5;
+        }
+    });
+
+    // 2. Thaw and launch Chamber Orbs up into the main bucket
+    orbs.forEach(orb => {
+        if (orb.inChamber) {
+            orb.inChamber = false; // Move to active pool
+            orb.isFrosted = false; // Melt
+            orb.mass = ORB_TYPES[orb.typeIndex].radius * SCALE;
+            
+            // Hydraulic push (Strong upward velocity)
+            orb.vy = -25 - (Math.random() * 10);
+            orb.vx += (Math.random() - 0.5) * 5;
+            
+            thawedCount++;
+            createParticles(orb.x, orb.y, 'var(--frost-color)'); 
+        }
+    });
+    
+    // 3. Spawn a new Frozen batch in the Chamber
+    spawnChamberBatch();
+    
+    // Visuals
+    container.classList.add('eruption');
+    setTimeout(() => container.classList.remove('eruption'), 500);
+    
+    screenShake = 40;
+    createFloatingText(canvas.width/2, 300, "ERUPTION!", "#ff8c00", 50);
+    showLevelToast("GEOTHERMAL FLUSH", `${thawedCount} ORBS ADDED TO BUCKET`);
+    
+    updateUI();
+}
+
+function spawnChamberBatch() {
+    for(let i=0; i<5; i++) {
+        let typeIdx = Math.floor(Math.random() * 4); 
+        let spaceX = canvas.width / 5;
+        let nx = (spaceX * i) + (spaceX / 2);
+        
+        // Spawn them securely below the main floor line
+        let newFrost = new Orb(nx, GAME_HEIGHT - 20, typeIdx, false, AMMO.STANDARD);
+        newFrost.inChamber = true;
+        newFrost.isFrosted = true;
+        newFrost.mass *= 2; 
+        orbs.push(newFrost);
+    }
+}
+
+
+function addEnergy(amount) {
+    if (isGameOver) return;
+    let scaler = 1 + (level * 0.2); 
+    currentEnergy += amount * scaler;
+    if (currentEnergy > maxEnergy) currentEnergy = maxEnergy;
+    updateUI();
+}
+
+function checkLevelUp() {
+    let newLevel = 1;
+    if (score > 800) newLevel = 2;
+    if (score > 2500) newLevel = 3;
+    if (score > 5000) newLevel = 4;
+    if (score > 10000) newLevel = 5;
+    
+    if (newLevel > level) {
+        level = newLevel;
+        showLevelToast("LEVEL UP", "Max Energy Increased");
+        maxEnergy = 100 + ((level - 1) * 50);
+        currentEnergy = maxEnergy;
+        updateUI();
+    }
+}
+
+function showLevelToast(title, msg) {
+    document.querySelector('.toast-title').innerText = title;
+    toastMessage.innerText = msg;
+    levelToast.classList.add('active');
+    setTimeout(() => {
+        levelToast.classList.remove('active');
+    }, 3000);
+}
+
+function updateUI() {
+    const pct = (currentEnergy / maxEnergy) * 100;
+    xpBar.style.width = pct + '%';
+    xpText.innerText = Math.floor(currentEnergy) + " / " + maxEnergy;
+    levelValueEl.innerText = level;
+    
+    heatBar.style.width = systemHeat + '%';
+    heatText.innerText = Math.floor(systemHeat) + "%";
+    
+    // Status text logic
+    statusDisplay.className = '';
+    if (graceMoves > 0) {
+        statusDisplay.innerText = `GRACE (${graceMoves})`;
+        statusDisplay.classList.add('status-grace');
+    } else if (systemHeat >= 80) {
+        statusDisplay.innerText = "CRITICAL";
+        statusDisplay.classList.add('status-critical');
+    } else if (systemHeat >= 40) {
+        statusDisplay.innerText = "HEATING";
+        statusDisplay.classList.add('status-heating');
+    } else {
+        statusDisplay.innerText = "STABLE";
+    }
+
+    for (let i = 1; i <= 3; i++) {
+        const btn = document.getElementById(`skill-${i}`);
+        const badge = document.getElementById(`cost-${i}`);
+        const skill = SKILLS[i];
+        badge.innerText = Math.floor(skill.currentCost);
+        if (skill.currentCost > skill.baseCost * 1.5) badge.classList.add('high-cost');
+        else badge.classList.remove('high-cost');
+        if (level >= skill.unlockLevel) btn.classList.add('unlocked');
+        else btn.classList.remove('unlocked');
+        if (currentEnergy < skill.currentCost) btn.classList.add('cannot-afford');
+        else btn.classList.remove('cannot-afford');
+    }
+}
+
+window.useSkill = function(id) {
+    if (isGameOver) return;
+    const skill = SKILLS[id];
+    
+    if (level < skill.unlockLevel) return;
+    if (currentEnergy < skill.currentCost) {
+        createFloatingText(canvas.width/2, canvas.height - 100, "NEED ENERGY!", "#ff003c", 20);
+        return;
+    }
+    
+    currentEnergy -= skill.currentCost;
+    skill.currentCost = Math.ceil(skill.currentCost * skill.mult);
+    
+    systemHeat += 30;
+    createFloatingText(shooterPos.x + 50, shooterPos.y, "+30 HEAT", "#ff003c", 25);
+    
+    if (systemHeat >= 100) {
+        triggerEruption();
+    }
+    
+    screenShake = 15;
+    
+    if (id === 1) { // SHAKE
+        orbs.forEach(orb => {
+            if(!orb.inChamber) {
+                orb.vy -= 15 + Math.random() * 5;
+                orb.vx += (Math.random() - 0.5) * 20;
+            }
+        });
+        createFloatingText(canvas.width/2, canvas.height/2, "SHAKE!", "#00f3ff", 40);
+    } 
+    else if (id === 2) { // SMASH
+        orbs.forEach(orb => { 
+            if(!orb.inChamber) {
+                orb.vy += 30; orb.vx *= 0.1; 
+            }
+        });
+        screenShake = 30;
+        createFloatingText(canvas.width/2, canvas.height/2, "SMASH!", "#00ff41", 50);
+    }
+    else if (id === 3) { // VOID
+        const threshold = GAME_HEIGHT * 0.4;
+        let candidates = orbs.filter(o => o.y > threshold && !o.isGeode && !o.inChamber);
+        if (candidates.length < 5) candidates = [...orbs.filter(o => !o.inChamber)];
+        candidates.sort(() => Math.random() - 0.5);
+        let removedCount = 0;
+        for(let t of candidates) {
+            if (removedCount >= 8) break;
+            t.markedForDeletion = true;
+            createParticles(t.x, t.y, t.radius, t.color);
+            removedCount++;
+        }
+        screenShake = 40;
+        createFloatingText(canvas.width/2, canvas.height/2, `VOID -${removedCount}`, "#bc13fe", 50);
+    }
+    
+    updateUI();
+}
+
+function resolveCollisions() {
+    for (let i = 0; i < orbs.length; i++) {
+        for (let j = i + 1; j < orbs.length; j++) {
+            let o1 = orbs[i];
+            let o2 = orbs[j];
+            
+            // --- NEW: Chamber Segregation ---
+            // Chamber orbs cannot collide with active bucket orbs.
+            if (o1.inChamber !== o2.inChamber) continue;
+            
+            // Piercing ghost ignores collisions
+            if ((o1.ammoType === 'PIERCE' && o1.ghostTimer > 0) || 
+                (o2.ammoType === 'PIERCE' && o2.ghostTimer > 0)) {
+                continue; 
+            }
+            
+            let dx = o2.x - o1.x;
+            let dy = o2.y - o1.y;
+            let distSq = dx*dx + dy*dy;
+            let rSum = o1.radius + o2.radius;
+            
+            if (distSq < rSum * rSum) {
+                
+                let rvx = o2.vx - o1.vx;
+                let rvy = o2.vy - o1.vy;
+                let vRel = Math.sqrt(rvx*rvx + rvy*rvy);
+
+                // Geode Cracking
+                if (o1.isGeode || o2.isGeode) {
+                    if (vRel > 15) { 
+                        if (o1.isGeode) o1.hp--;
+                        if (o2.isGeode) o2.hp--;
+                        createParticles((o1.x+o2.x)/2, (o1.y+o2.y)/2, '#fff');
+                        screenShake += 5;
+                        if (o1.isGeode && o1.hp <= 0) {
+                            o1.markedForDeletion = true;
+                            createFloatingText(o1.x, o1.y, "CRACKED!", "#fff", 30);
+                            addEnergy(20); 
+                            awardAmmo(AMMO.PIERCE); 
+                        }
+                        if (o2.isGeode && o2.hp <= 0) {
+                            o2.markedForDeletion = true;
+                            createFloatingText(o2.x, o2.y, "CRACKED!", "#fff", 30);
+                            addEnergy(20);
+                            awardAmmo(AMMO.PIERCE); 
+                        }
+                    }
+                }
+                
+                // Merge Logic (ONLY if neither is Frosted and neither is Geode)
+                if (!o1.isFrosted && !o2.isFrosted && !o1.isGeode && !o2.isGeode && 
+                    o1.typeIndex === o2.typeIndex && !o1.markedForDeletion && !o2.markedForDeletion) {
+                    
+                    const mx = (o1.x + o2.x) / 2;
+                    const my = (o1.y + o2.y) / 2;
+                    o1.markedForDeletion = true;
+                    o2.markedForDeletion = true;
+                    
+                    let newType = Math.min(o1.typeIndex + 1, ORB_TYPES.length - 1);
+                    createParticles(mx, my, ORB_TYPES[newType].color);
+                    screenShake = Math.min(screenShake + newType * 3, 25);
+                    
+                    let baseScore = ORB_TYPES[newType].value;
+                    addEnergy(baseScore / 4); 
+                    
+                    if (comboTimer > 0) {
+                        comboCount++;
+                        baseScore *= comboCount;
+                        comboDisplay.innerText = "×" + comboCount;
+                        comboDisplay.style.opacity = 1;
+                        comboDisplay.style.transform = "translate(-50%, -50%) scale(1.5) rotate(-10deg)";
+                        setTimeout(() => {
+                            comboDisplay.style.transform = "translate(-50%, -50%) scale(1) rotate(-15deg)";
+                        }, 100);
+                        addEnergy(5); 
+                    } else {
+                        comboCount = 1;
+                        comboDisplay.style.opacity = 0;
+                    }
+                    comboTimer = 90;
+                    
+                    score += baseScore;
+                    scoreEl.innerText = score;
+                    checkLevelUp();
+                    
+                    if(comboCount > 1) {
+                        scoreEl.classList.add('combo-active');
+                        createFloatingText(mx, my, `×${comboCount}`, '#ffd700', 50); 
+                    } else {
+                         scoreEl.classList.remove('combo-active');
+                         createFloatingText(mx, my, `+${baseScore}`, '#fff', 24);
+                    }
+
+                    setTimeout(() => {
+                        let newOrb = new Orb(mx, my, newType, false, AMMO.STANDARD);
+                        newOrb.vx = (o1.vx + o2.vx) * 0.5;
+                        newOrb.vy = -3; 
+                        newOrb.hasCollided = true; 
+                        orbs.push(newOrb);
+                    }, 0);
+                    
+                    continue; 
+                }
+                
+                // Physics Response (Bounce)
+                let dist = Math.sqrt(distSq);
+                let overlap = rSum - dist;
+                let nx = dx / dist;
+                let ny = dy / dist;
+                let moveX = nx * overlap * 0.5;
+                let moveY = ny * overlap * 0.5;
+                
+                let m1 = o1.mass;
+                let m2 = o2.mass;
+                let totalM = m1 + m2;
+                let r1 = m2 / totalM; 
+                let r2 = m1 / totalM; 
+                
+                o1.x -= moveX * r1 * 2; 
+                o1.y -= moveY * r1 * 2;
+                o2.x += moveX * r2 * 2;
+                o2.y += moveY * r2 * 2;
+                
+                let velAlongNormal = rvx * nx + rvy * ny;
+                if (velAlongNormal > 0) continue;
+                
+                let e = 0.5; 
+                if (o1.isFrosted || o2.isFrosted) e = 0.3; 
+
+                let jVal = -(1 + e) * velAlongNormal;
+                jVal /= (1/m1 + 1/m2);
+                
+                let impulseX = jVal * nx;
+                let impulseY = jVal * ny;
+                
+                o1.vx -= impulseX / m1;
+                o1.vy -= impulseY / m1;
+                o2.vx += impulseX / m2;
+                o2.vy += impulseY / m2;
+            }
+        }
+    }
+}
+
+function createParticles(x, y, color) {
+    for(let i=0; i<12; i++) particles.push(new Particle(x, y, color));
+}
+
+function createFloatingText(x, y, text, color, size) {
+    floatingTexts.push(new FloatingText(x, y, text, color, size));
+}
+
+function update() {
+    if (isGameOver) return;
+    
+    const subSteps = 4;
+    for(let s=0; s<subSteps; s++) {
+        orbs.forEach(orb => orb.update());
+        resolveCollisions();
+    }
+    orbs = orbs.filter(orb => !orb.markedForDeletion);
+    
+    particles.forEach(p => p.update());
+    particles = particles.filter(p => p.life > 0);
+    
+    floatingTexts.forEach(t => t.update());
+    floatingTexts = floatingTexts.filter(t => t.life > 0);
+    
+    if(shotCooldown > 0) shotCooldown--;
+    if(comboTimer > 0) {
+        comboTimer--;
+        if(comboTimer === 0) {
+            comboCount = 0;
+            comboDisplay.style.opacity = 0;
+            scoreEl.classList.remove('combo-active');
+        }
+    }
+    
+    if (screenShake > 0) {
+        screenShake *= 0.9;
+        if (screenShake < 0.5) screenShake = 0;
+    }
+}
+
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    ctx.save();
+    if (screenShake > 0) {
+        let dx = (Math.random() - 0.5) * screenShake;
+        let dy = (Math.random() - 0.5) * screenShake;
+        ctx.translate(dx, dy);
+    }
+    
+    // --- DRAW GEOTHERMAL CHAMBER (SUB-FLOOR) ---
+    // Dynamic chamber color based on heat
+    let heatPct = systemHeat / 100;
+    let chamberR = Math.floor(0 + (255 * heatPct));
+    let chamberG = Math.floor(243 - (143 * heatPct)); // cyan shifting to orange
+    let chamberB = Math.floor(255 - (255 * heatPct));
+    
+    // Chamber Background
+    ctx.fillStyle = `rgba(${chamberR}, ${chamberG}, ${chamberB}, 0.1)`;
+    ctx.fillRect(0, mainFloorY, canvas.width, FLOOR_OFFSET);
+    
+    // The Separating Floor Line
+    ctx.beginPath();
+    ctx.moveTo(0, mainFloorY);
+    ctx.lineTo(canvas.width, mainFloorY);
+    ctx.strokeStyle = `rgb(${chamberR}, ${chamberG}, ${chamberB})`;
+    ctx.lineWidth = 4;
+    ctx.setLineDash([15, 10]); // Techy dashed line
+    ctx.stroke();
+    ctx.setLineDash([]);
+    
+    // Chamber Label
+    ctx.fillStyle = `rgba(${chamberR}, ${chamberG}, ${chamberB}, 0.3)`;
+    ctx.font = 'bold 12px Rajdhani';
+    ctx.textAlign = 'center';
+    ctx.fillText("GEOTHERMAL CHAMBER", canvas.width/2, mainFloorY + 20);
+
+    // Orbs & Particles
+    orbs.forEach(orb => orb.draw());
+    particles.forEach(p => p.draw());
+    floatingTexts.forEach(t => t.draw());
+
+    // Shooter Visuals
+    let currentShot = ammoQueue[0];
+    if (currentShot) {
+        ctx.fillStyle = currentShot.config.color;
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = currentShot.config.color;
+    } else {
+        ctx.fillStyle = '#333';
+    }
+    
+    ctx.beginPath();
+    ctx.arc(shooterPos.x, shooterPos.y, 12, 0, Math.PI*2); 
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = '#555';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    
+    // Icon
+    if (currentShot && currentShot.config.id !== 'STANDARD') {
+        ctx.fillStyle = '#000';
+        ctx.font = '12px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(currentShot.config.icon, shooterPos.x, shooterPos.y);
+    } else if (currentShot) {
+        let type = ORB_TYPES[currentShot.orbType];
+        ctx.fillStyle = type.color; 
+        ctx.fill();
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 10px Rajdhani';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(type.value, shooterPos.x, shooterPos.y);
+    }
+    
+    // Aim Line
+    if (isAiming) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(shooterPos.x, shooterPos.y);
+        
+        const dx = aimStart.x - aimCurrent.x;
+        const dy = aimStart.y - aimCurrent.y;
+        
+        ctx.lineTo(shooterPos.x + dx * 2, shooterPos.y + dy * 2);
+        
+        ctx.strokeStyle = `rgba(0, 243, 255, 0.5)`;
+        ctx.setLineDash([10, 10]);
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        
+        ctx.beginPath();
+        ctx.arc(shooterPos.x - dx, shooterPos.y - dy, 6, 0, Math.PI*2);
+        ctx.fillStyle = '#00f3ff';
+        ctx.fill();
+        
+        ctx.restore();
+    }
+    
+    // Death Limit Line
+    ctx.beginPath();
+    ctx.moveTo(0, SPAWN_Y - 20);
+    ctx.lineTo(canvas.width, SPAWN_Y - 20);
+    ctx.strokeStyle = 'rgba(255, 0, 60, 0.3)';
+    ctx.setLineDash([10, 10]);
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.setLineDash([]);
+    
+    ctx.restore();
+}
+
+function loop() {
+    update();
+    draw();
+    requestAnimationFrame(loop);
+}
+
+function endGame() {
+    isGameOver = true;
+    if (score > bestScore) {
+        bestScore = score;
+        localStorage.setItem('neonDropBest', bestScore);
+    }
+    finalScoreEl.innerText = score;
+    gameOverScreen.classList.add('active');
+}
+
+window.resetGame = function() {
+    orbs = [];
+    particles = [];
+    floatingTexts = [];
+    score = 0;
+    level = 1;
+    currentEnergy = 0;
+    maxEnergy = 100; 
+    comboCount = 0;
+    systemHeat = 0;
+    graceMoves = 0;
+    
+    for(let k in SKILLS) SKILLS[k].currentCost = SKILLS[k].baseCost;
+    
+    scoreEl.innerText = '0';
+    levelValueEl.innerText = '1';
+    isGameOver = false;
+    gameOverScreen.classList.remove('active');
+    
+    ammoQueue = [];
+    fillAmmoQueue();
+    
+    // Spawn Geodes in Main Area
+    for(let i=0; i<3; i++) {
+        let g = new Orb(Math.random()*canvas.width, mainFloorY - 100 - Math.random()*200, 0, true);
+        orbs.push(g);
+    }
+    
+    // Spawn Frosted Bedrock in Chamber
+    spawnChamberBatch();
+    
+    updateUI();
+}
+
+// Init
+fillAmmoQueue();
+resetGame(); 
+loop();
+
+</script>
+</body>
+</html>

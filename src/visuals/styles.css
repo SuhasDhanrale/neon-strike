@@ -1,0 +1,649 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@500;700;900&display=swap');
+@import './styles/hud.css';
+
+:root {
+    /* ============================================
+       VOLCANIC PRINT PALETTE
+       Bold Graphic Novel meets Volcanic Risograph
+       ============================================ */
+    
+    /* Foundations */
+    --ink-black: #1a1410;
+    --charcoal: #2d2520;
+    --ash: #4a4040;
+    --smoke: #6b5e58;
+    --parchment: #e8ddd0;
+    --cream: #f5ede0;
+    
+    /* Volcanic Accents */
+    --ember: #e85d20;
+    --lava: #c93010;
+    --magma: #ff7a35;
+    --cinder: #8c3a10;
+    --coal: #3d2010;
+    
+    /* Cool Contrast */
+    --slate: #5a7a8a;
+    --glacier: #7a9eb0;
+    --bone: #c8b8a8;
+    
+    /* UI Mappings */
+    --bg-color: var(--charcoal);
+    --ui-color: var(--parchment);
+    --accent-color: var(--ember);
+    --danger-color: var(--lava);
+    --gold-color: var(--magma);
+    --purple-color: var(--cinder);
+    --frost-color: var(--glacier);
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    background-color: var(--ink-black);
+    overflow: hidden;
+    font-family: 'Rajdhani', sans-serif;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+#game-container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    background: var(--charcoal);
+    overflow: hidden;
+    transition: background 0.2s;
+}
+
+/* Eruption Visuals - volcanic red overlay */
+#game-container.eruption {
+    background: var(--coal);
+}
+
+#game-container.eruption canvas {
+    /* Hard edge shadow instead of blur */
+    box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+}
+
+canvas {
+    /* No glow effects - flat black border for print aesthetic */
+    border-top: 3px solid var(--ink-black);
+    border-bottom: 3px solid var(--ink-black);
+    box-shadow: none;
+}
+
+/* Gravity Vignette - simplified, no blur */
+#gravity-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    background: transparent;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    z-index: 2;
+}
+
+#ui-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 20px;
+    box-sizing: border-box;
+    z-index: 10;
+}
+
+.header {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+    pointer-events: none;
+}
+
+.top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+/* Score Box - volcanic print style */
+.score-box {
+    background: var(--charcoal);
+    padding: 8px 16px;
+    border-radius: 0;
+    border: 3px solid var(--ink-black);
+    text-align: center;
+    min-width: 70px;
+    box-shadow: 4px 4px 0 var(--ink-black);
+}
+
+.score-label {
+    color: var(--smoke);
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-family: 'Bebas Neue', sans-serif;
+}
+
+.score-value {
+    color: var(--parchment);
+    font-size: 1.4rem;
+    font-weight: 900;
+    font-family: 'Bebas Neue', sans-serif;
+    letter-spacing: 1px;
+}
+
+/* Status Indicator - volcanic style */
+#status-display {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--ember);
+    margin-top: 4px;
+    transition: color 0.3s;
+    font-family: 'Bebas Neue', sans-serif;
+    letter-spacing: 1px;
+}
+
+.status-grace {
+    color: var(--parchment) !important;
+}
+
+.status-heating {
+    color: var(--ember) !important;
+}
+
+.status-critical {
+    color: var(--lava) !important;
+    animation: pulse-flash 0.5s infinite;
+}
+
+@keyframes pulse-flash {
+    0% { opacity: 1; }
+    50% { opacity: 0.6; }
+    100% { opacity: 1; }
+}
+
+/* --- CENTERED NEXT ORB DISPLAY --- */
+#next-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.next-label {
+    color: var(--smoke);
+    font-size: 0.6rem;
+    margin-bottom: 4px;
+    letter-spacing: 2px;
+    font-family: 'Bebas Neue', sans-serif;
+    text-transform: uppercase;
+}
+
+.next-queue {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.next-slot {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.85rem;
+    color: var(--cream);
+    font-weight: 900;
+    background: var(--charcoal);
+    border: 3px solid var(--ink-black);
+    position: relative;
+    box-shadow: 3px 3px 0 var(--ink-black);
+    font-family: 'Bebas Neue', sans-serif;
+    transition: transform 0.2s;
+}
+
+.next-slot.small {
+    width: 28px;
+    height: 28px;
+    opacity: 0.8;
+    font-size: 0.65rem;
+    box-shadow: 2px 2px 0 var(--ink-black);
+}
+
+/* Ammo Icon Overlay */
+.ammo-icon-overlay {
+    position: absolute;
+    font-size: 1rem;
+    z-index: 2;
+    font-family: sans-serif;
+}
+
+.next-slot.small .ammo-icon-overlay {
+    font-size: 0.8rem;
+}
+
+/* Energy Bar */
+.xp-container {
+    width: 100%;
+    height: 12px;
+    background: var(--ink-black);
+    border-radius: 0;
+    margin-top: 10px;
+    position: relative;
+    overflow: hidden;
+    border: 2px solid var(--ink-black);
+}
+
+.xp-bar {
+    height: 100%;
+    width: 0%;
+    background: var(--slate);
+    transition: width 0.1s linear;
+}
+
+.xp-text {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    top: -1px;
+    line-height: 12px;
+    font-size: 0.55rem;
+    color: var(--cream);
+    font-weight: 700;
+    letter-spacing: 1px;
+    font-family: 'Bebas Neue', sans-serif;
+}
+
+/* Heat Bar */
+.heat-container {
+    width: 100%;
+    height: 12px;
+    background: var(--ink-black);
+    border-radius: 0;
+    margin-top: 8px;
+    position: relative;
+    overflow: hidden;
+    border: 2px solid var(--cinder);
+}
+
+.heat-bar {
+    height: 100%;
+    width: 0%;
+    background: var(--lava);
+    transition: width 0.2s ease-out;
+}
+
+.heat-text {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    top: -1px;
+    line-height: 12px;
+    font-size: 0.55rem;
+    color: var(--cream);
+    font-weight: 700;
+    letter-spacing: 1px;
+    font-family: 'Bebas Neue', sans-serif;
+}
+
+/* Abilities Bar */
+.abilities-container {
+    position: absolute;
+    bottom: 30px;
+    width: 100%;
+    max-width: 400px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    pointer-events: auto;
+    z-index: 20;
+}
+
+.ability-wrapper {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.ability-btn {
+    background: var(--charcoal);
+    border: 3px solid var(--ink-black);
+    color: var(--ash);
+    border-radius: 0;
+    width: 70px;
+    height: 70px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-weight: bold;
+    cursor: default;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.15s;
+    box-shadow: 4px 4px 0 var(--ink-black);
+}
+
+.ability-btn.unlocked {
+    border-color: var(--ember);
+    color: var(--parchment);
+    cursor: pointer;
+}
+
+.ability-btn.unlocked:active {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0 var(--ink-black);
+}
+
+.cost-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: var(--lava);
+    color: var(--cream);
+    font-size: 0.7rem;
+    min-width: 24px;
+    height: 24px;
+    border-radius: 0;
+    padding: 0 4px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 2px solid var(--ink-black);
+    z-index: 2;
+    opacity: 0;
+    font-weight: 900;
+    font-family: 'Bebas Neue', sans-serif;
+    transition: background-color 0.3s;
+}
+
+.cost-badge.high-cost {
+    background-color: var(--lava);
+}
+
+.ability-btn.unlocked ~ .cost-badge {
+    opacity: 1;
+}
+
+.lock-icon {
+    font-size: 1.5rem;
+    position: absolute;
+    font-family: sans-serif;
+}
+
+.ability-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.ability-btn.unlocked .ability-content {
+    opacity: 1;
+}
+
+.ability-btn.unlocked .lock-icon {
+    display: none;
+}
+
+.ability-icon {
+    font-size: 1.4rem;
+    margin-bottom: 2px;
+}
+
+.ability-label {
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.disabled-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(26, 20, 16, 0.7);
+    transition: opacity 0.2s;
+    pointer-events: none;
+    opacity: 0;
+}
+
+.ability-btn.unlocked.cannot-afford .disabled-overlay {
+    opacity: 1;
+}
+
+/* Game Over Screen */
+#game-over-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--ink-black);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    pointer-events: auto;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s;
+    z-index: 50;
+    border: 8px solid var(--ember);
+}
+
+#game-over-screen.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.btn {
+    background: var(--ember);
+    color: var(--cream);
+    border: 3px solid var(--ink-black);
+    padding: 15px 40px;
+    font-size: 1.2rem;
+    font-weight: 900;
+    border-radius: 0;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    box-shadow: 5px 5px 0 var(--ink-black);
+    font-family: 'Bebas Neue', sans-serif;
+    margin-top: 20px;
+}
+
+.btn:hover {
+    background: var(--lava);
+}
+
+.btn:active {
+    transform: translate(2px, 2px);
+    box-shadow: 3px 3px 0 var(--ink-black);
+}
+
+/* Combo Display - VOLCANIC STYLE */
+#combo-display {
+    position: absolute;
+    top: 35%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0) rotate(-8deg);
+    font-size: 7rem;
+    font-weight: 900;
+    font-style: normal;
+    color: #ff7a35;  /* Bright magma orange */
+    opacity: 0;
+    pointer-events: none;
+    z-index: 20;
+    transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.1s;
+    letter-spacing: -2px;
+    font-family: 'Bebas Neue', sans-serif;
+    /* Multiple shadows create outline effect at text edge */
+    text-shadow: 
+        -2px -2px 0 #f5ede0,
+        2px -2px 0 #f5ede0,
+        -2px 2px 0 #f5ede0,
+        2px 2px 0 #f5ede0,
+        -3px 0 0 #3d2010,
+        3px 0 0 #3d2010,
+        0 -3px 0 #3d2010,
+        0 3px 0 #3d2010;
+}
+
+.tutorial {
+    position: absolute;
+    bottom: 120px;
+    width: 100%;
+    text-align: center;
+    color: var(--smoke);
+    font-size: 0.9rem;
+    pointer-events: none;
+    animation: pulse-dim 2s infinite;
+    font-family: 'Bebas Neue', sans-serif;
+    letter-spacing: 2px;
+}
+
+@keyframes pulse-dim {
+    0% { opacity: 0.5; }
+    50% { opacity: 0.8; }
+    100% { opacity: 0.5; }
+}
+
+/* Level Toast */
+#level-toast {
+    position: absolute;
+    top: 20%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    background: var(--charcoal);
+    border: 3px solid var(--ember);
+    padding: 20px 40px;
+    border-radius: 0;
+    text-align: center;
+    pointer-events: none;
+    z-index: 30;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s;
+    opacity: 0;
+    box-shadow: 5px 5px 0 var(--ink-black);
+}
+
+#level-toast.active {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+}
+
+.toast-title {
+    color: var(--ember);
+    font-size: 1.5rem;
+    font-weight: 900;
+    margin-bottom: 5px;
+    font-family: 'Bebas Neue', sans-serif;
+    letter-spacing: 2px;
+}
+
+.toast-desc {
+    color: var(--parchment);
+    font-size: 1rem;
+}
+
+/* FTUE Overlay Styles */
+#ftue-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: auto;
+    z-index: 100;
+    display: none;
+}
+
+#ftue-overlay.active {
+    display: block;
+}
+
+.ftue-scrim {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(26, 20, 16, 0.85);
+}
+
+.ftue-tooltip {
+    position: absolute;
+    background: var(--charcoal);
+    border: 3px solid var(--ember);
+    border-radius: 0;
+    padding: 20px 25px;
+    max-width: 300px;
+    box-shadow: 5px 5px 0 var(--ink-black);
+}
+
+.ftue-tooltip.top {
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.ftue-tooltip.center {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.ftue-tooltip.bottom {
+    bottom: 150px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.ftue-heading {
+    color: var(--ember);
+    font-size: 1.2rem;
+    font-weight: 900;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-family: 'Bebas Neue', sans-serif;
+}
+
+.ftue-body {
+    color: var(--parchment);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin-bottom: 15px;
+}
+
+.ftue-continue {
+    color: var(--smoke);
+    font-size: 0.7rem;
+    font-family: 'Bebas Neue', sans-serif;
+    letter-spacing: 1px;
+}
