@@ -3,7 +3,6 @@
 export const NORMAL_GRAVITY = 0.5
 export const FRICTION = 0.99
 export const SPAWN_Y = 30
-
 export const MAX_POWER = 35
 export const FLOOR_OFFSET = 80
 export const GEODE_SPAWN_CHANCE = 0.04
