@@ -7,39 +7,39 @@ export const THEME = {
   // ============================================
   // FOUNDATIONS — Volcanic Print Palette
   // ============================================
-  
+
   // Core backgrounds
   inkBlack: '#1a1410',    // Near-black with warm brown undertone
   charcoal: '#2d2520',    // Background panels, UI containers
   ash: '#4a4040',        // Secondary surfaces, inactive states
   smoke: '#6b5e58',      // Borders, subtle separators
-  
+
   // Text colors
   parchment: '#e8ddd0',  // Primary text, orb values
   cream: '#f5ede0',      // Highlight text, important labels
-  
+
   // ============================================
   // VOLCANIC ACCENTS — Earned colors
   // ============================================
-  
+
   ember: '#e85d20',       // Primary danger accent — heat, alerts
   lava: '#c93010',        // Critical state, max heat
   magma: '#ff7a35',       // Mid-range heat, warm highlights
   cinder: '#8c3a10',     // Deep shadow on hot elements
   coal: '#3d2010',        // Darkest warm tone — chamber fill
-  
+
   // ============================================
   // COOL CONTRAST (sparingly)
   // ============================================
-  
+
   slate: '#5a7a8a',       // Value-2 orb, coolest element
   glacier: '#7a9eb0',    // Frost orbs in chamber
   bone: '#c8b8a8',        // Geode coloring
-  
+
   // ============================================
   // ORB VISUAL MAP — Index matches orb value tier
   // ============================================
-  
+
   orbs: [
     // idx 0 — value 2
     { fill: '#5a7a8a', shadow: '#2d3d45', outline: '#1a1410', label: '#e8ddd0' },
@@ -64,7 +64,7 @@ export const THEME = {
     // idx 10 — value 2048 — INVERTED. Crown tier.
     { fill: '#e8ddd0', shadow: '#8c3a10', outline: '#e85d20', label: '#1a1410' },
   ],
-  
+
   // Special orb states
   frosted: {
     fill: '#7a9eb0',
@@ -73,22 +73,22 @@ export const THEME = {
     specularSize: 0.25,
     specularAlpha: 0.75
   },
-  
+
   geode: {
     fill: '#c8b8a8',
     outline: '#4a4040',
     shadow: '#2d2520'
   },
-  
+
   pierce: {
     outline: '#e85d20',
     dashPattern: [6, 4]
   },
-  
+
   // ============================================
   // CHAMBER CONFIG
   // ============================================
-  
+
   chamber: {
     lineWidth: 5,
     shadowWidth: 7,
@@ -97,11 +97,11 @@ export const THEME = {
     halftoneSpacing: 12,
     halftoneDotR: 2.5
   },
-  
+
   // ============================================
   // PARTICLE CONFIG
   // ============================================
-  
+
   particles: {
     count: 12,
     speedMin: 3,
@@ -112,13 +112,13 @@ export const THEME = {
     lengthMax: 20,
     lineWidth: 2.5
   },
-  
+
   // ============================================
   // SHOOTER CONFIG
   // ============================================
-  
+
   shooter: {
-    radius: 12,
+    radius: 20,
     ringColor: '#4a4040',
     ringWidth: 3,
     aimLineColor: 'rgba(232, 221, 208, 0.5)',
@@ -128,21 +128,21 @@ export const THEME = {
     aimDotRadius: 6,
     outlineWidth: 4
   },
-  
+
   // ============================================
   // DEATH LINE
   // ============================================
-  
+
   deathLine: {
     color: 'rgba(232, 53, 32, 0.3)',
     dash: [10, 10],
     width: 2
   },
-  
+
   // ============================================
   // FLOATING TEXT COLOR MAP
   // ============================================
-  
+
   floatingTextColors: {
     score: '#e8ddd0',       // +{score}
     combo: '#ff7a35',       // ×{combo} - bright magma orange
@@ -155,11 +155,11 @@ export const THEME = {
     heat: '#c93010',       // +30 HEAT
     piercing: '#ff7a35'    // PIERCING ROUND! - bright magma
   },
-  
+
   // ============================================
   // VFX CONFIG
   // ============================================
-  
+
   vfx: {
     // All blur effects disabled for volcanic print aesthetic
     shadowBlur: 0,

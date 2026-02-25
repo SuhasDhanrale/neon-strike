@@ -19,6 +19,7 @@ export const State = {
   // Score / Progression
   score: 0,
   bestScore: parseInt(localStorage.getItem('neonDropBest') || '0'),
+  maxUnlockedOrbIndex: 0,
   currentEnergy: 0,
   maxEnergy: BASE_MAX_ENERGY,
 

@@ -2,7 +2,8 @@
 
 export const NORMAL_GRAVITY = 0.5
 export const FRICTION = 0.99
-export const SPAWN_Y = 200
+export const SPAWN_Y = 30
+
 export const MAX_POWER = 35
 export const FLOOR_OFFSET = 80
 export const GEODE_SPAWN_CHANCE = 0.04
@@ -12,7 +13,7 @@ export const CHAMBER_BATCH_SIZE = 5
 export const GRACE_MOVES_AFTER_ERUPTION = 5
 export const ERUPTION_HEAT_THRESHOLD = 100
 export const SUBSTEPPING_ITERATIONS = 4
-export const DANGER_LINE_Y = SPAWN_Y - 20
+export const DANGER_LINE_Y = 70
 export const GAME_OVER_SETTLE_SPEED = 0.12
 export const GAME_OVER_SETTLE_FRAMES = 24
 

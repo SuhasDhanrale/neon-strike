@@ -6,7 +6,7 @@
        VOLCANIC PRINT PALETTE
        Bold Graphic Novel meets Volcanic Risograph
        ============================================ */
-    
+
     /* Foundations */
     --ink-black: #1a1410;
     --charcoal: #2d2520;
@@ -14,19 +14,19 @@
     --smoke: #6b5e58;
     --parchment: #e8ddd0;
     --cream: #f5ede0;
-    
+
     /* Volcanic Accents */
     --ember: #e85d20;
     --lava: #c93010;
     --magma: #ff7a35;
     --cinder: #8c3a10;
     --coal: #3d2010;
-    
+
     /* Cool Contrast */
     --slate: #5a7a8a;
     --glacier: #7a9eb0;
     --bone: #c8b8a8;
-    
+
     /* UI Mappings */
     --bg-color: var(--charcoal);
     --ui-color: var(--parchment);
@@ -71,9 +71,7 @@ body {
 }
 
 canvas {
-    /* No glow effects - flat black border for print aesthetic */
-    border-top: 3px solid var(--ink-black);
-    border-bottom: 3px solid var(--ink-black);
+    border: none;
     box-shadow: none;
 }
 
@@ -175,9 +173,17 @@ canvas {
 }
 
 @keyframes pulse-flash {
-    0% { opacity: 1; }
-    50% { opacity: 0.6; }
-    100% { opacity: 1; }
+    0% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.6;
+    }
+
+    100% {
+        opacity: 1;
+    }
 }
 
 /* --- CENTERED NEXT ORB DISPLAY --- */
@@ -384,7 +390,7 @@ canvas {
     background-color: var(--lava);
 }
 
-.ability-btn.unlocked ~ .cost-badge {
+.ability-btn.unlocked~.cost-badge {
     opacity: 1;
 }
 
@@ -496,7 +502,8 @@ canvas {
     font-size: 7rem;
     font-weight: 900;
     font-style: normal;
-    color: #ff7a35;  /* Bright magma orange */
+    color: #ff7a35;
+    /* Bright magma orange */
     opacity: 0;
     pointer-events: none;
     z-index: 20;
@@ -504,7 +511,7 @@ canvas {
     letter-spacing: -2px;
     font-family: 'Bebas Neue', sans-serif;
     /* Multiple shadows create outline effect at text edge */
-    text-shadow: 
+    text-shadow:
         -2px -2px 0 #f5ede0,
         2px -2px 0 #f5ede0,
         -2px 2px 0 #f5ede0,
@@ -529,9 +536,17 @@ canvas {
 }
 
 @keyframes pulse-dim {
-    0% { opacity: 0.5; }
-    50% { opacity: 0.8; }
-    100% { opacity: 0.5; }
+    0% {
+        opacity: 0.5;
+    }
+
+    50% {
+        opacity: 0.8;
+    }
+
+    100% {
+        opacity: 0.5;
+    }
 }
 
 /* Level Toast */

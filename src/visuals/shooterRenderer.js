@@ -2,8 +2,9 @@
 // Thick outlines, hard shadows, flat fills
 
 import { State } from '../state.js'
-import { THEME, ORB_VISUALS } from './theme.js'
+import { THEME, ORB_VISUALS, getOrbShape } from './theme.js'
 import { ORB_TYPES, DANGER_LINE_Y } from '../config.js'
+import { drawPolygon } from './vfxHelpers.js'
 
 export function draw(ctx) {
   // ============================================
@@ -21,14 +22,14 @@ export function draw(ctx) {
   // ============================================
   // SHOOTER DOT
   // ============================================
-  
+
   // Disable shadow blur for volcanic aesthetic
   ctx.shadowBlur = 0
-  
+
   // Get orb visual for current shot
   let shooterFill = '#4a4040'
   let shooterOutline = '#1a1410'
-  
+
   if (currentShot) {
     const typeIndex = currentShot.orbType || 0
     const visual = ORB_VISUALS[Math.min(typeIndex, ORB_VISUALS.length - 1)]
@@ -114,19 +115,19 @@ export function draw(ctx) {
     // Aim dot with thick outline
     const dotX = State.shooterPos.x - dx
     const dotY = State.shooterPos.y - dy
-    
+
     // Dot shadow
     ctx.fillStyle = '#1a1410'
     ctx.beginPath()
     ctx.arc(dotX + 2, dotY + 2, THEME.shooter.aimDotRadius, 0, Math.PI * 2)
     ctx.fill()
-    
+
     // Dot fill
     ctx.fillStyle = THEME.shooter.aimDotColor
     ctx.beginPath()
     ctx.arc(dotX, dotY, THEME.shooter.aimDotRadius, 0, Math.PI * 2)
     ctx.fill()
-    
+
     // Dot outline
     ctx.strokeStyle = '#1a1410'
     ctx.lineWidth = 2
@@ -148,6 +149,67 @@ export function draw(ctx) {
   ctx.lineWidth = THEME.deathLine.width
   ctx.stroke()
   ctx.setLineDash([])
+
+  // ============================================
+  // NEXT ORB
+  // ============================================
+  const nextShot = State.ammoQueue[1]
+  if (nextShot) {
+    const typeIndex = nextShot.orbType || 0
+    const visual = ORB_VISUALS[Math.min(typeIndex, ORB_VISUALS.length - 1)]
+    const shape = getOrbShape(typeIndex)
+    const nx = State.shooterPos.x + THEME.shooter.radius + 20
+    const ny = State.shooterPos.y - 10
+    const nRadius = THEME.shooter.radius * 0.65
+
+    ctx.save()
+    ctx.shadowBlur = 0
+    // Hard offset shadow
+    ctx.fillStyle = '#1a1410'
+    ctx.beginPath()
+    drawPolygon(ctx, nx + nRadius * 0.18, ny + nRadius * 0.2, nRadius, shape)
+    ctx.fill()
+    // Flat fill
+    ctx.fillStyle = visual.fill
+    ctx.beginPath()
+    drawPolygon(ctx, nx, ny, nRadius, shape)
+    ctx.fill()
+    // Specular Highlight
+    ctx.globalAlpha = 0.55
+    ctx.fillStyle = '#e8ddd0'
+    ctx.beginPath()
+    ctx.arc(nx - nRadius * 0.28, ny - nRadius * 0.28, nRadius * 0.18, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.globalAlpha = 1.0
+    // Outline
+    ctx.strokeStyle = visual.outline
+    ctx.lineWidth = 3
+    ctx.beginPath()
+    drawPolygon(ctx, nx, ny, nRadius, shape)
+    ctx.stroke()
+    // Value text
+    if (nextShot.config && nextShot.config.id !== 'STANDARD') {
+      ctx.fillStyle = '#1a1410'
+      ctx.font = 'bold 9px sans-serif'
+      ctx.textAlign = 'center'
+      ctx.textBaseline = 'middle'
+      ctx.fillText(nextShot.config.icon, nx, ny)
+    } else {
+      let type = ORB_TYPES[typeIndex]
+
+      // text stroke
+      ctx.strokeStyle = '#1a1410'
+      ctx.lineWidth = 2
+      ctx.font = 'bold 9px "Bebas Neue", "Rajdhani", sans-serif'
+      ctx.textAlign = 'center'
+      ctx.textBaseline = 'middle'
+      ctx.strokeText(type.value, nx, ny)
+
+      ctx.fillStyle = '#e8ddd0'
+      ctx.fillText(type.value, nx, ny)
+    }
+    ctx.restore()
+  }
 }
 
 function drawPulseRing(ctx, pos, frame) {
@@ -157,21 +219,21 @@ function drawPulseRing(ctx, pos, frame) {
   const alpha = (1 - progress) * 0.6
 
   ctx.save()
-  
+
   // No blur - just flat ring with outline
   ctx.beginPath()
   ctx.arc(pos.x, pos.y, radius, 0, Math.PI * 2)
   ctx.strokeStyle = `rgba(232, 221, 208, ${alpha})`
   ctx.lineWidth = 2
   ctx.stroke()
-  
+
   // Outer shadow ring (offset)
   ctx.beginPath()
   ctx.arc(pos.x + 2, pos.y + 2, radius, 0, Math.PI * 2)
   ctx.strokeStyle = `rgba(26, 20, 16, ${alpha * 0.5})`
   ctx.lineWidth = 2
   ctx.stroke()
-  
+
   ctx.restore()
 }
 

@@ -2,15 +2,16 @@
 // HUD REDESIGN — Visual-first, no text numbers on bars
 import { State } from '../state.js'
 import { ORB_TYPES } from '../config.js'
+import { EventBus } from '../eventBus.js'
+import { ORB_VISUALS, getOrbShape } from './theme.js'
+import { drawPolygon } from './vfxHelpers.js'
 
 // DOM element cache
 let scoreEl = null
 let heatFillEl = null
 let energyFillEl = null
-let nextShotEl = null
-let nextShotValueEl = null
-let nextShotAmmoIconEl = null
 let canvasEl = null
+let progressionBarEl = null
 
 // Long-press timer for mobile cost reveal
 const pressTimers = new Map()
@@ -19,10 +20,11 @@ function initElements() {
   scoreEl = document.getElementById('score')
   heatFillEl = document.getElementById('heat-bar')
   energyFillEl = document.getElementById('xp-bar')
-  nextShotEl = document.getElementById('next-shot-orb')
-  nextShotValueEl = document.getElementById('next-shot-value')
-  nextShotAmmoIconEl = document.getElementById('next-shot-ammo-icon')
   canvasEl = document.getElementById('gameCanvas')
+  progressionBarEl = document.getElementById('progression-bar')
+
+  initProgressionBar()
+  EventBus.on('unlocked:orb', handleOrbUnlock)
 
   // Setup long-press detection for skill cost badges
   setupSkillLongPress()
@@ -67,6 +69,36 @@ function setupSkillLongPress() {
   }
 }
 
+function initProgressionBar() {
+  // Start at i=4 (orb value 32)
+  for (let i = 4; i < ORB_TYPES.length; i++) {
+    let slot = document.getElementById(`progression-slot-${i}`)
+    if (!slot) {
+      const orbDef = ORB_TYPES[i]
+      const t = Math.max(0, Math.min(1, (orbDef.radius - 40) / (95 - 40)))
+      const radius = 10 + (t * 14) // Radii from 10 to 24 (diameter 20 to 48)
+      const size = Math.ceil(radius * 2 + 8) // Canvas size based on diameter + padding
+
+      slot = document.createElement('canvas')
+      slot.width = size
+      slot.height = size
+      slot.style.width = `${size}px`
+      slot.style.height = `${size}px`
+      slot.className = 'progression-slot'
+      slot.id = `progression-slot-${i}`
+      progressionBarEl.appendChild(slot)
+    }
+  }
+}
+
+function handleOrbUnlock({ typeIndex }) {
+  const slot = document.getElementById(`progression-slot-${typeIndex}`)
+  if (slot) {
+    slot.classList.add('flash-unlock')
+    setTimeout(() => slot.classList.remove('flash-unlock'), 1000)
+  }
+}
+
 export const uiRenderer = {
 
   // Called every frame OR whenever State changes
@@ -77,8 +109,8 @@ export const uiRenderer = {
     this.updateScore()
     this.updateHeatBar()
     this.updateEnergyBar()
-    this.updateNextShot()
     this.updateSkills()
+    this.updateProgressionBar()
   },
 
   updateScore() {
@@ -97,7 +129,7 @@ export const uiRenderer = {
     if (!heatFillEl) return
 
     const pct = State.systemHeat // already 0-100
-    heatFillEl.style.width = pct + '%'
+    heatFillEl.style.height = pct + '%'
 
     // Class-based pulse state
     heatFillEl.classList.remove('heat-calm', 'heat-warning', 'heat-critical', 'heat-erupting')
@@ -120,7 +152,7 @@ export const uiRenderer = {
     if (!energyFillEl) return
 
     const pct = (State.currentEnergy / State.maxEnergy) * 100
-    energyFillEl.style.width = pct + '%'
+    energyFillEl.style.height = pct + '%'
 
     energyFillEl.classList.remove('energy-full', 'energy-empty')
     if (State.currentEnergy >= State.maxEnergy) {
@@ -129,40 +161,6 @@ export const uiRenderer = {
       energyFillEl.classList.add('energy-empty')
     }
     // No text. No numbers. Bar only.
-  },
-
-  updateNextShot() {
-    if (!nextShotEl || !nextShotValueEl) return
-
-    const next = State.ammoQueue[0]
-    if (!next) return
-
-    const orbType = ORB_TYPES[next.orbType]
-    if (!orbType) return
-
-    // Update CSS variable for glow color
-    nextShotEl.style.setProperty('--orb-color', orbType.color)
-    nextShotEl.style.borderColor = orbType.color
-
-    // Value text
-    nextShotValueEl.textContent = orbType.value
-
-    // Cooldown state
-    if (State.canFire) {
-      nextShotEl.classList.remove('cooling')
-    } else {
-      nextShotEl.classList.add('cooling')
-    }
-
-    // Special ammo icon (if applicable)
-    if (nextShotAmmoIconEl) {
-      // Check if ammo has special config
-      if (next.config && next.config.id !== 'STANDARD') {
-        nextShotAmmoIconEl.textContent = next.config.icon || ''
-      } else {
-        nextShotAmmoIconEl.textContent = ''
-      }
-    }
   },
 
   updateSkills() {
@@ -196,6 +194,97 @@ export const uiRenderer = {
           btn.classList.add('unaffordable')
         }
       }
+    }
+  },
+
+  updateProgressionBar() {
+    if (!progressionBarEl) return
+    const maxUnlocked = Math.min(State.maxUnlockedOrbIndex, ORB_TYPES.length - 1)
+
+    // Update filling line
+    const fillEl = document.getElementById('progress-line-fill')
+    if (fillEl) {
+      // 4 is the starting index. We have ORB_TYPES.length - 4 total displayed segments
+      const displayedUnlocked = Math.max(0, maxUnlocked - 3)
+      const totalDisplayed = ORB_TYPES.length - 4
+      const pct = Math.min(100, (displayedUnlocked / totalDisplayed) * 100)
+      fillEl.style.width = `calc(${pct}% - 40px)` // account for left/right padding
+    }
+
+    // Start rendering from i=4 (orb value 32)
+    for (let i = 4; i < ORB_TYPES.length; i++) {
+      const slot = document.getElementById(`progression-slot-${i}`)
+      if (!slot) continue
+
+      const isUnlocked = i <= maxUnlocked
+      const orbDef = ORB_TYPES[i]
+      const ctx = slot.getContext('2d')
+      const size = slot.width
+
+      if (isUnlocked) {
+        slot.classList.remove('locked')
+        slot.classList.add('unlocked')
+      } else {
+        slot.classList.add('locked')
+        slot.classList.remove('unlocked')
+      }
+
+      ctx.clearRect(0, 0, size, size)
+      const visual = ORB_VISUALS[Math.min(i, ORB_VISUALS.length - 1)]
+      const shape = getOrbShape(i)
+      const t = Math.max(0, Math.min(1, (orbDef.radius - 40) / (95 - 40)))
+      const radius = 10 + (t * 14) // Radii from 10 to 24
+      const cx = size / 2
+      const cy = size / 2
+
+      ctx.save()
+      // Hard offset shadow
+      ctx.fillStyle = '#1a1410'
+      ctx.beginPath()
+      drawPolygon(ctx, cx + radius * 0.18, cy + radius * 0.2, radius, shape)
+      ctx.fill()
+
+      // Flat fill
+      ctx.fillStyle = visual.fill
+      ctx.beginPath()
+      drawPolygon(ctx, cx, cy, radius, shape)
+      ctx.fill()
+
+      // Specular highlight
+      ctx.globalAlpha = 0.55
+      ctx.fillStyle = '#e8ddd0'
+      ctx.beginPath()
+      ctx.arc(cx - radius * 0.28, cy - radius * 0.28, radius * 0.18, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.globalAlpha = 1.0
+
+      // Outline
+      if (isUnlocked) {
+        ctx.strokeStyle = '#ff7a35' // Golden/Magma stroke for unlocked
+        ctx.lineWidth = 2.5
+      } else {
+        ctx.strokeStyle = '#1a1410' // Solid outline
+        ctx.lineWidth = 1.5
+      }
+
+      ctx.beginPath()
+      drawPolygon(ctx, cx, cy, radius, shape)
+      ctx.stroke()
+
+      // Text
+      const valStr = orbDef.value.toString()
+      const fontSize = valStr.length > 3 ? 9 : 10
+      ctx.font = `bold ${fontSize}px "Bebas Neue", "Rajdhani", sans-serif`
+      ctx.textAlign = 'center'
+      ctx.textBaseline = 'middle'
+
+      ctx.strokeStyle = '#1a1410'
+      ctx.lineWidth = 2
+      ctx.strokeText(valStr, cx, cy + 1)
+      ctx.fillStyle = '#e8ddd0'
+      ctx.fillText(valStr, cx, cy + 1)
+
+      ctx.restore()
     }
   }
 }

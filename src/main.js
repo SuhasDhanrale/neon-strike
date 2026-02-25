@@ -19,10 +19,10 @@ function init() {
 
   // Wire up skill buttons to powerupManager
   initPowerups()
-  
+
   // Wire input
   initInput(State.canvas)
-  
+
   // Expose resetGame globally for the game-over button
   window.resetGame = resetGame
 
@@ -45,18 +45,34 @@ function init() {
 
 function handleResize() {
   const container = document.getElementById('game-container')
+  const uiOffset = 140 // reserve top space for score and progression bar
+
   if (container.clientWidth > 600) {
     State.canvas.width = 400
-    State.canvas.height = container.clientHeight * 0.95
+    State.canvas.height = Math.max(300, (container.clientHeight * 0.95) - uiOffset)
   } else {
     State.canvas.width = container.clientWidth
-    State.canvas.height = container.clientHeight
+    State.canvas.height = Math.max(300, container.clientHeight - uiOffset)
   }
+  State.canvas.style.marginTop = `${uiOffset}px`
   State.gameWidth = State.canvas.width
   State.gameHeight = State.canvas.height
   State.mainFloorY = State.gameHeight - FLOOR_OFFSET
   State.scale = State.canvas.width / 500
   State.shooterPos = { x: State.canvas.width / 2, y: SPAWN_Y }
+
+  // Position vertical heat and energy bars perfectly on the canvas edges
+  const hc = document.getElementById('vertical-heat-container')
+  const ec = document.getElementById('vertical-energy-container')
+  if (hc && ec) {
+    hc.style.left = State.canvas.offsetLeft + 'px'
+    hc.style.top = State.canvas.offsetTop + 'px'
+    hc.style.height = State.canvas.height + 'px'
+
+    ec.style.left = (State.canvas.offsetLeft + State.canvas.width - 2) + 'px'
+    ec.style.top = State.canvas.offsetTop + 'px'
+    ec.style.height = State.canvas.height + 'px'
+  }
 }
 
 // Wait for DOM to be ready
