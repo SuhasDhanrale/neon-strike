@@ -10,6 +10,7 @@ import { addHeat } from './heatSystem.js'
 import { updateUI } from '../visuals/uiRenderer.js'
 import { LeaderboardManager } from '../leaderboard/leaderboardManager.js'
 import { LeaderboardUI } from '../leaderboard/ui/leaderboardUI.js'
+import { GearSystem } from '../systems/GearSystem.js'
 
 export class Orb {
   constructor(x, y, typeIndex, isGeode = false, ammoConfig = AMMO_TYPES.STANDARD) {
@@ -288,8 +289,10 @@ export function resetGame() {
   State.particles = []
   State.floatingTexts = []
   State.score = 0
-  State.currentEnergy = 0
-  State.maxEnergy = 100
+
+  // Do not reset currentEnergy or maxEnergy. They are persistent across games.
+  // maxEnergy is managed by GearSystem based on the next gear cost.
+
   State.comboCount = 0
   State.systemHeat = 0
   State.graceMoves = 0

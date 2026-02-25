@@ -5,6 +5,7 @@
 
 import { State } from '../state.js'
 import { GEAR_SYSTEM } from '../config.js'
+import { EventBus } from '../eventBus.js'
 
 // ============================================
 // MODULE STATE
@@ -12,6 +13,7 @@ import { GEAR_SYSTEM } from '../config.js'
 let supplyBtn = null
 let isDraining = false
 let drainSpeed = 0 // Energy units per frame to drain
+let lastButtonState = null // track state to prevent console spam
 
 // ============================================
 // HELPERS
@@ -55,6 +57,10 @@ function updateSupplyButton() {
 
     if (allActive) {
         // All gears running — hide button
+        if (lastButtonState !== 'hidden') {
+            console.log(`[GearSystem] All gears active. Hiding supply button.`);
+            lastButtonState = 'hidden'
+        }
         supplyBtn.classList.add('gear-supply-hidden')
         supplyBtn.disabled = true
         return
@@ -63,23 +69,44 @@ function updateSupplyButton() {
     supplyBtn.classList.remove('gear-supply-hidden')
 
     const isFull = State.currentEnergy >= State.gearEnergyTarget
+
     if (isFull) {
         supplyBtn.disabled = false
         supplyBtn.classList.add('gear-supply-active')
         supplyBtn.classList.remove('gear-supply-inactive')
+        if (lastButtonState !== 'active') {
+            console.log('[GearSystem] Supply Energy button is now ACTIVE');
+            lastButtonState = 'active'
+        }
     } else {
         supplyBtn.disabled = true
         supplyBtn.classList.remove('gear-supply-active')
         supplyBtn.classList.add('gear-supply-inactive')
+        if (lastButtonState !== 'inactive') {
+            console.log('[GearSystem] Supply Energy button is now INACTIVE');
+            lastButtonState = 'inactive'
+        }
     }
 }
 
 function tryActivateGear() {
     const nextIndex = getNextGearIndex()
-    if (nextIndex >= 11) return
-    if (State.currentEnergy < State.gearEnergyTarget) return
-    if (isDraining) return // Prevent double-click during drain
+    console.log(`[GearSystem] Attempting to activate gear. Next index: ${nextIndex}, Current Energy: ${State.currentEnergy}, Target: ${State.gearEnergyTarget}`);
 
+    if (nextIndex >= 11) {
+        console.log(`[GearSystem] Activation failed: Max gears reached.`);
+        return
+    }
+    if (State.currentEnergy < State.gearEnergyTarget) {
+        console.log(`[GearSystem] Activation failed: Not enough energy.`);
+        return
+    }
+    if (isDraining) {
+        console.log(`[GearSystem] Activation failed: Already draining.`);
+        return // Prevent double-click during drain
+    }
+
+    console.log(`[GearSystem] Energy check passed. Starting energy drain animation for gear ${nextIndex}.`);
     // Start drain animation
     isDraining = true
     drainSpeed = Math.max(2, State.currentEnergy / 30) // Drain over ~30 frames minimum
@@ -87,6 +114,10 @@ function tryActivateGear() {
     // Activate the gear immediately (visual feedback)
     State.activeGears.add(nextIndex)
     persist()
+
+    if (nextIndex > 0) {
+        EventBus.emit('celebration:gear_unlocked', { gearIndex: nextIndex })
+    }
 }
 
 function updateDrain() {
@@ -94,10 +125,12 @@ function updateDrain() {
 
     // Drain energy
     State.currentEnergy -= drainSpeed
+    localStorage.setItem('neonStrike_currentEnergy', State.currentEnergy.toString())
 
     if (State.currentEnergy <= 0) {
         // Drain complete
         State.currentEnergy = 0
+        localStorage.setItem('neonStrike_currentEnergy', '0')
         isDraining = false
         updateMaxEnergy()
     }
@@ -122,6 +155,10 @@ export const GearSystem = {
                 updateSupplyButton()
             })
         }
+
+        // Ensure starting state is visually correct on load/refresh
+        console.log(`[GearSystem] Initialized. Active Gears: ${State.activeGears.size}, Energy Target: ${State.gearEnergyTarget}, Current Energy: ${State.currentEnergy}`);
+        updateSupplyButton()
     },
 
     // Called every frame from uiRenderer to refresh button state

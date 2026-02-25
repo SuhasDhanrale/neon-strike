@@ -79,7 +79,7 @@ export function draw(ctx) {
   // ============================================
   if (currentShot && currentShot.config.id !== 'STANDARD') {
     // Special ammo icon
-    ctx.fillStyle = '#1a1410'
+    ctx.fillStyle = '#ffffffff'
     ctx.font = 'bold 11px sans-serif'
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'

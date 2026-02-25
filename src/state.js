@@ -12,6 +12,7 @@ export const State = {
 
   // Game Status
   isGameOver: false,
+  isPaused: false,
   canFire: true,
   shotCooldown: 0,
   frameCount: 0,

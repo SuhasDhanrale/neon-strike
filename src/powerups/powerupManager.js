@@ -29,6 +29,7 @@ export function useSkill(id) {
 
   // Deduct cost + scale up for next use
   State.currentEnergy -= runtimeSkill.currentCost
+  localStorage.setItem('neonStrike_currentEnergy', State.currentEnergy.toString())
   runtimeSkill.currentCost = Math.ceil(runtimeSkill.currentCost * skill.mult)
 
   // Add heat (obeys eruption grace lock)

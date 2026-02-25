@@ -26,9 +26,43 @@ function initElements() {
 
   initProgressionBar()
   EventBus.on('unlocked:orb', handleOrbUnlock)
+  EventBus.on('celebration:gear_unlocked', showGearCelebration)
 
   // Setup long-press detection for skill cost badges
   setupSkillLongPress()
+
+  // Setup Gear Celebration Continue Button
+  const continueBtn = document.getElementById('gear-toast-continue')
+  if (continueBtn) {
+    continueBtn.addEventListener('click', () => {
+      const overlay = document.getElementById('gear-unlock-overlay')
+      if (overlay) {
+        overlay.classList.add('gear-toast-hidden')
+      }
+      State.isPaused = false
+    })
+  }
+}
+
+function showGearCelebration({ gearIndex }) {
+  const messages = [
+    "The machine groans with new power. Push further.",
+    "Kinetic limits exceeded. New parameters set.",
+    "Geothermal pressure stabilized at higher capacity.",
+    "System architectures expanding. Do not halt.",
+    "Energy pathways clear. The core demands more input."
+  ]
+  const msg = messages[gearIndex % messages.length]
+
+  const msgEl = document.getElementById('gear-toast-dynamic-message')
+  if (msgEl) msgEl.textContent = msg
+
+  const overlay = document.getElementById('gear-unlock-overlay')
+  if (overlay) {
+    overlay.classList.remove('gear-toast-hidden')
+  }
+
+  State.isPaused = true
 }
 
 function setupSkillLongPress() {

@@ -9,10 +9,17 @@ export function addScore(amount) {
 
 export function addEnergy(amount) {
   if (State.isGameOver) return
+  const oldEnergy = State.currentEnergy
   State.currentEnergy += amount
   if (State.currentEnergy > State.maxEnergy) {
     State.currentEnergy = State.maxEnergy
   }
+
+  if (oldEnergy !== State.currentEnergy) {
+    console.log(`[Energy] Gained ${amount}. Updated from ${oldEnergy.toFixed(1)} to ${State.currentEnergy.toFixed(1)}/${State.maxEnergy}`);
+  }
+
+  localStorage.setItem('neonStrike_currentEnergy', State.currentEnergy.toString())
   updateUI()
 }
 

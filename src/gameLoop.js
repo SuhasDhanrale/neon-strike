@@ -8,12 +8,13 @@ import { draw } from './visuals/renderer.js'
 import { SUBSTEPPING_ITERATIONS } from './config.js'
 import { GearBackground } from './visuals/Background/GearBackground.js'
 import { GearSystem } from './systems/GearSystem.js'
+import { uiRenderer } from './visuals/uiRenderer.js'
 
 let running = false
 let lastTime = 0
 
 function update() {
-  if (State.isGameOver) return
+  if (State.isGameOver || State.isPaused) return
 
   // Sub-stepping for physics stability
   for (let s = 0; s < SUBSTEPPING_ITERATIONS; s++) {
@@ -48,6 +49,12 @@ function loop(timestamp) {
 
   // Update gear background each frame (driven by GearSystem)
   GearBackground.update(GearSystem.getActiveGears())
+
+  // Process energy drain animation even when the game is paused
+  if (GearSystem.isDrainingEnergy()) {
+    GearSystem.tickUI()
+    uiRenderer.updateEnergyBar()
+  }
 
   requestAnimationFrame(loop)
 }

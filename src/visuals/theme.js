@@ -42,41 +42,41 @@ export const THEME = {
 
   orbs: [
     // idx 0 — value 2
-    { fill: '#5a7a8a', shadow: '#2d3d45', outline: '#1a1410', label: '#e8ddd0' },
+    { fill: '#5a7a8a', shadow: '#2d3d45', outline: '#3d525f', label: '#e8ddd0' },
     // idx 1 — value 4
-    { fill: '#6b8a70', shadow: '#354538', outline: '#1a1410', label: '#e8ddd0' },
+    { fill: '#6b8a70', shadow: '#354538', outline: '#4a5f4d', label: '#e8ddd0' },
     // idx 2 — value 8
-    { fill: '#8a7a50', shadow: '#453d28', outline: '#1a1410', label: '#e8ddd0' },
+    { fill: '#8a7a50', shadow: '#453d28', outline: '#5f5438', label: '#e8ddd0' },
     // idx 3 — value 16
-    { fill: '#9a6a38', shadow: '#4d3520', outline: '#1a1410', label: '#f5ede0' },
+    { fill: '#9a6a38', shadow: '#4d3520', outline: '#6a4a28', label: '#f5ede0' },
     // idx 4 — value 32
-    { fill: '#b85530', shadow: '#5c2a18', outline: '#1a1410', label: '#f5ede0' },
+    { fill: '#b85530', shadow: '#5c2a18', outline: '#7a3a20', label: '#f5ede0' },
     // idx 5 — value 64
-    { fill: '#c94020', shadow: '#641e10', outline: '#1a1410', label: '#f5ede0' },
+    { fill: '#c94020', shadow: '#641e10', outline: '#8a2c15', label: '#f5ede0' },
     // idx 6 — value 128
-    { fill: '#e85d20', shadow: '#741e08', outline: '#1a1410', label: '#f5ede0' },
+    { fill: '#e85d20', shadow: '#741e08', outline: '#a04015', label: '#f5ede0' },
     // idx 7 — value 256
-    { fill: '#e83a10', shadow: '#740808', outline: '#1a1410', label: '#f5ede0' },
+    { fill: '#e83a10', shadow: '#740808', outline: '#a0280a', label: '#f5ede0' },
     // idx 8 — value 512
-    { fill: '#d42808', shadow: '#6a0404', outline: '#1a1410', label: '#f5ede0' },
+    { fill: '#d42808', shadow: '#6a0404', outline: '#901c05', label: '#f5ede0' },
     // idx 9 — value 1024
-    { fill: '#c01808', shadow: '#600404', outline: '#1a1410', label: '#f5ede0' },
+    { fill: '#c01808', shadow: '#600404', outline: '#801005', label: '#f5ede0' },
     // idx 10 — value 2048 — INVERTED. Crown tier.
-    { fill: '#e8ddd0', shadow: '#8c3a10', outline: '#e85d20', label: '#1a1410' },
+    { fill: '#e8ddd0', shadow: '#8c3a10', outline: '#c0a080', label: '#1a1410' },
   ],
 
   // Special orb states
   frosted: {
     fill: '#7a9eb0',
-    outline: '#4a6070',
-    shadow: '#3d5060',
+    outline: '#5a7a8a',
+    shadow: '#3d5a6a',
     specularSize: 0.25,
     specularAlpha: 0.75
   },
 
   geode: {
     fill: '#c8b8a8',
-    outline: '#4a4040',
+    outline: '#8a7a6a',
     shadow: '#2d2520'
   },
 
