@@ -14,32 +14,31 @@ export function registerSkill(skillModule) {
 export function useSkill(id) {
   const skill = registry[id]
   const runtimeSkill = State.skills[id]
-  
+
   if (!skill || State.isGameOver) return
-  if (State.level < skill.unlockLevel) return
   if (State.currentEnergy < runtimeSkill.currentCost) {
     createFloatingText(
-      State.canvas.width / 2, 
-      State.canvas.height - 100, 
-      "NEED ENERGY!", 
-      THEME.floatingTextColors.needEnergy, 
+      State.canvas.width / 2,
+      State.canvas.height - 100,
+      "NEED ENERGY!",
+      THEME.floatingTextColors.needEnergy,
       26
     )
     return
   }
-  
+
   // Deduct cost + scale up for next use
   State.currentEnergy -= runtimeSkill.currentCost
   runtimeSkill.currentCost = Math.ceil(runtimeSkill.currentCost * skill.mult)
-  
+
   // Add heat (obeys eruption grace lock)
   const heatApplied = addHeat(skill.heatCost)
   if (heatApplied) {
     createFloatingText(
-      State.shooterPos.x + 50, 
-      State.shooterPos.y, 
-      `+${skill.heatCost} HEAT`, 
-      THEME.floatingTextColors.heat, 
+      State.shooterPos.x + 50,
+      State.shooterPos.y,
+      `+${skill.heatCost} HEAT`,
+      THEME.floatingTextColors.heat,
       28
     )
   } else if (State.graceMoves > 0) {
@@ -51,10 +50,10 @@ export function useSkill(id) {
       26
     )
   }
-  
+
   // Run the skill
   skill.execute(State)
-  
+
   State.screenShake = skill.shakeAmount || 15
   updateUI()
 }

@@ -5,7 +5,6 @@ import { THEME } from '../../visuals/theme.js'
 export default {
   id: 3,
   name: 'Void',
-  unlockLevel: 4,
   mult: 1.4,
   shakeAmount: 40,
   heatCost: 30,
@@ -25,10 +24,10 @@ export default {
       removedCount++
     }
     createFloatingText(
-      State.canvas.width / 2, 
-      State.canvas.height / 2, 
-      `VOID -${removedCount}`, 
-      THEME.floatingTextColors.void, 
+      State.canvas.width / 2,
+      State.canvas.height / 2,
+      `VOID -${removedCount}`,
+      THEME.floatingTextColors.void,
       60
     )
   }

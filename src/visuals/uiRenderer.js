@@ -5,7 +5,6 @@ import { ORB_TYPES } from '../config.js'
 
 // DOM element cache
 let scoreEl = null
-let levelEl = null
 let heatFillEl = null
 let energyFillEl = null
 let nextShotEl = null
@@ -18,14 +17,13 @@ const pressTimers = new Map()
 
 function initElements() {
   scoreEl = document.getElementById('score')
-  levelEl = document.getElementById('level-value')
   heatFillEl = document.getElementById('heat-bar')
   energyFillEl = document.getElementById('xp-bar')
   nextShotEl = document.getElementById('next-shot-orb')
   nextShotValueEl = document.getElementById('next-shot-value')
   nextShotAmmoIconEl = document.getElementById('next-shot-ammo-icon')
   canvasEl = document.getElementById('gameCanvas')
-  
+
   // Setup long-press detection for skill cost badges
   setupSkillLongPress()
 }
@@ -34,9 +32,9 @@ function setupSkillLongPress() {
   for (let i = 1; i <= 3; i++) {
     const skillBtn = document.getElementById(`skill-${i}`)
     const wrapper = document.getElementById(`skill-wrapper-${i}`)
-    
+
     if (!skillBtn || !wrapper) continue
-    
+
     // Touch start — begin long-press timer
     skillBtn.addEventListener('touchstart', (e) => {
       const timer = setTimeout(() => {
@@ -44,7 +42,7 @@ function setupSkillLongPress() {
       }, 400) // 400ms long press
       pressTimers.set(i, timer)
     })
-    
+
     // Touch end — clear timer and hide after delay
     skillBtn.addEventListener('touchend', () => {
       const timer = pressTimers.get(i)
@@ -57,7 +55,7 @@ function setupSkillLongPress() {
         wrapper.classList.remove('show-cost')
       }, 1200)
     })
-    
+
     // Touch cancel — clear timer
     skillBtn.addEventListener('touchcancel', () => {
       const timer = pressTimers.get(i)
@@ -75,9 +73,8 @@ export const uiRenderer = {
   update() {
     // Initialize elements on first call
     if (!scoreEl) initElements()
-    
+
     this.updateScore()
-    this.updateLevel()
     this.updateHeatBar()
     this.updateEnergyBar()
     this.updateNextShot()
@@ -87,7 +84,7 @@ export const uiRenderer = {
   updateScore() {
     if (!scoreEl) return
     scoreEl.textContent = State.score
-    
+
     // Gold glow on combo
     if (State.comboCount > 1) {
       scoreEl.classList.add('combo-glow')
@@ -96,23 +93,17 @@ export const uiRenderer = {
     }
   },
 
-  updateLevel() {
-    if (!levelEl) return
-    levelEl.textContent = State.level
-    // No status text anymore. Level number only.
-  },
-
   updateHeatBar() {
     if (!heatFillEl) return
-    
+
     const pct = State.systemHeat // already 0-100
     heatFillEl.style.width = pct + '%'
 
     // Class-based pulse state
     heatFillEl.classList.remove('heat-calm', 'heat-warning', 'heat-critical', 'heat-erupting')
-    if (pct >= 80)      heatFillEl.classList.add('heat-critical')
+    if (pct >= 80) heatFillEl.classList.add('heat-critical')
     else if (pct >= 40) heatFillEl.classList.add('heat-warning')
-    else                heatFillEl.classList.add('heat-calm')
+    else heatFillEl.classList.add('heat-calm')
 
     // Bleed heat color onto canvas edge
     if (canvasEl) {
@@ -127,7 +118,7 @@ export const uiRenderer = {
 
   updateEnergyBar() {
     if (!energyFillEl) return
-    
+
     const pct = (State.currentEnergy / State.maxEnergy) * 100
     energyFillEl.style.width = pct + '%'
 
@@ -142,7 +133,7 @@ export const uiRenderer = {
 
   updateNextShot() {
     if (!nextShotEl || !nextShotValueEl) return
-    
+
     const next = State.ammoQueue[0]
     if (!next) return
 
@@ -179,9 +170,9 @@ export const uiRenderer = {
       const btn = document.getElementById(`skill-${i}`)
       const badge = document.getElementById(`cost-${i}`)
       const skill = State.skills[i]
-      
+
       if (!skill) continue
-      
+
       // Update cost badge
       if (badge) {
         badge.textContent = Math.floor(skill.currentCost)
@@ -191,17 +182,15 @@ export const uiRenderer = {
           badge.classList.remove('high-cost')
         }
       }
-      
+
       if (btn) {
         // Clear all state classes first
         btn.classList.remove('locked', 'affordable', 'unaffordable', 'cooldown')
-        
-        const isUnlocked = State.level >= skill.unlockLevel
+
+        // All skills always unlocked - check affordability only
         const canAfford = State.currentEnergy >= skill.currentCost
-        
-        if (!isUnlocked) {
-          btn.classList.add('locked')
-        } else if (canAfford) {
+
+        if (canAfford) {
           btn.classList.add('affordable')
         } else {
           btn.classList.add('unaffordable')
@@ -220,7 +209,7 @@ export function showLevelToast(title, msg) {
   const levelToast = document.getElementById('level-toast')
   const toastTitle = document.querySelector('.toast-title')
   const toastMessage = document.getElementById('toast-message')
-  
+
   if (toastTitle) toastTitle.textContent = title
   if (toastMessage) toastMessage.textContent = msg
   if (levelToast) {

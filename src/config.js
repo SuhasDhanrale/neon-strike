@@ -26,8 +26,6 @@ export const HEAT_THRESHOLDS = {
   COOL_REDUCTION: 5
 }
 
-export const LEVEL_THRESHOLDS = [0, 800, 2500, 5000, 10000]
-export const ENERGY_PER_LEVEL = 50
 export const BASE_MAX_ENERGY = 100
 
 export const ORB_TYPES = [
@@ -50,7 +48,7 @@ export const AMMO_TYPES = {
 }
 
 export const SKILLS_CONFIG = {
-  1: { id: 1, name: 'Shake', icon: '⚡', label: 'SHAKE', baseCost: 15, mult: 1.3, unlockLevel: 1, heatCost: 30 },
-  2: { id: 2, name: 'Smash', icon: '🔨', label: 'SMASH', baseCost: 40, mult: 1.25, unlockLevel: 2, heatCost: 30 },
-  3: { id: 3, name: 'Void', icon: '🌀', label: 'VOID', baseCost: 80, mult: 1.4, unlockLevel: 4, heatCost: 30 }
+  1: { id: 1, name: 'Shake', icon: '⚡', label: 'SHAKE', baseCost: 15, mult: 1.3, heatCost: 30 },
+  2: { id: 2, name: 'Smash', icon: '🔨', label: 'SMASH', baseCost: 40, mult: 1.25, heatCost: 30 },
+  3: { id: 3, name: 'Void', icon: '🌀', label: 'VOID', baseCost: 80, mult: 1.4, heatCost: 30 }
 }

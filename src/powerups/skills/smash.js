@@ -5,7 +5,6 @@ import { THEME } from '../../visuals/theme.js'
 export default {
   id: 2,
   name: 'Smash',
-  unlockLevel: 2,
   mult: 1.25,
   shakeAmount: 30,
   heatCost: 30,
@@ -18,10 +17,10 @@ export default {
       }
     })
     createFloatingText(
-      State.canvas.width / 2, 
-      State.canvas.height / 2, 
-      "SMASH!", 
-      THEME.floatingTextColors.smash, 
+      State.canvas.width / 2,
+      State.canvas.height / 2,
+      "SMASH!",
+      THEME.floatingTextColors.smash,
       60
     )
   }

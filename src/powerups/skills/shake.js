@@ -5,7 +5,6 @@ import { THEME } from '../../visuals/theme.js'
 export default {
   id: 1,
   name: 'Shake',
-  unlockLevel: 1,
   mult: 1.3,
   shakeAmount: 15,
   heatCost: 30,
@@ -18,10 +17,10 @@ export default {
       }
     })
     createFloatingText(
-      State.canvas.width / 2, 
-      State.canvas.height / 2, 
-      "SHAKE!", 
-      THEME.floatingTextColors.shake, 
+      State.canvas.width / 2,
+      State.canvas.height / 2,
+      "SHAKE!",
+      THEME.floatingTextColors.shake,
       50
     )
   }
