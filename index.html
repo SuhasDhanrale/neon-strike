@@ -1,110 +1,113 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Neon Strike: Kinetic Merge</title>
     <meta name="description" content="Arcade physics merge game. Manage geothermal pressure and utilize tactical ammo.">
 </head>
+
 <body>
 
-<div id="game-container">
-    <canvas id="gameCanvas"></canvas>
-    <div id="gravity-overlay"></div>
-    <div id="combo-display">×2</div>
+    <div id="game-container">
+        <canvas id="gameCanvas"></canvas>
+        <div id="gravity-overlay"></div>
+        <div id="combo-display">×2</div>
 
-    <div id="level-toast">
-        <div class="toast-title">SYSTEM WARNING</div>
-        <div class="toast-desc" id="toast-message">Gravity Increasing...</div>
-    </div>
+        <div id="level-toast">
+            <div class="toast-title">SYSTEM WARNING</div>
+            <div class="toast-desc" id="toast-message">Gravity Increasing...</div>
+        </div>
 
-    <div id="ui-layer">
-        <!-- NEW HUD LAYOUT -->
-        <div class="hud-container">
-            <!-- TOP ROW: Score -->
-            <div class="hud-top-row">
-                <div class="hud-score">
-                    <div class="hud-label">SCORE</div>
-                    <div class="hud-score-value" id="score">0</div>
+        <div id="ui-layer">
+            <!-- Leaderboard Toggle Button -->
+            <button id="lb-toggle-btn" title="Scoreboard">T</button>
+
+            <!-- NEW HUD LAYOUT -->
+            <div class="hud-container">
+                <!-- TOP ROW: Score -->
+                <div class="hud-top-row">
+                    <div class="hud-score">
+                        <div class="hud-label">SCORE</div>
+                        <div class="hud-score-value" id="score">0</div>
+                    </div>
+                </div>
+
+                <!-- HEAT BAR (thick, primary danger indicator) -->
+                <div class="hud-heat-container">
+                    <div class="heat-bar-fill heat-calm" id="heat-bar"></div>
+                </div>
+
+                <!-- ENERGY BAR (thin, secondary indicator) -->
+                <div class="hud-energy-container">
+                    <div class="energy-bar-fill" id="xp-bar"></div>
+                </div>
+
+                <!-- NEXT SHOT (centered, large orb) -->
+                <div class="hud-next-shot">
+                    <div class="hud-label">NEXT</div>
+                    <div id="next-shot-orb">
+                        <span id="next-shot-value">2</span>
+                        <span id="next-shot-ammo-icon" class="ammo-badge"></span>
+                    </div>
                 </div>
             </div>
 
-            <!-- HEAT BAR (thick, primary danger indicator) -->
-            <div class="hud-heat-container">
-                <div class="heat-bar-fill heat-calm" id="heat-bar"></div>
-            </div>
+            <div class="tutorial" id="tutorial-text">Keep Orb Volume Down • High Heat = Eruption</div>
 
-            <!-- ENERGY BAR (thin, secondary indicator) -->
-            <div class="hud-energy-container">
-                <div class="energy-bar-fill" id="xp-bar"></div>
-            </div>
+            <!-- SKILLS BAR -->
+            <div class="skills-bar">
+                <div class="skill-wrapper" id="skill-wrapper-1">
+                    <div class="skill-btn locked" id="skill-1"
+                        style="--skill-color:#00f3ff; --skill-color-rgb:0,243,255" onclick="useSkill(1)">
+                        <div class="skill-lock-icon">🔒</div>
+                        <div class="skill-content">
+                            <span class="skill-icon">⚡</span>
+                            <span class="skill-label">SHAKE</span>
+                        </div>
+                    </div>
+                    <div class="skill-cost-badge" id="cost-1">15</div>
+                </div>
 
-            <!-- NEXT SHOT (centered, large orb) -->
-            <div class="hud-next-shot">
-                <div class="hud-label">NEXT</div>
-                <div id="next-shot-orb">
-                    <span id="next-shot-value">2</span>
-                    <span id="next-shot-ammo-icon" class="ammo-badge"></span>
+                <div class="skill-wrapper" id="skill-wrapper-2">
+                    <div class="skill-btn locked" id="skill-2" style="--skill-color:#00ff41; --skill-color-rgb:0,255,65"
+                        onclick="useSkill(2)">
+                        <div class="skill-lock-icon">🔒</div>
+                        <div class="skill-content">
+                            <span class="skill-icon">🔨</span>
+                            <span class="skill-label">SMASH</span>
+                        </div>
+                    </div>
+                    <div class="skill-cost-badge" id="cost-2">40</div>
+                </div>
+
+                <div class="skill-wrapper" id="skill-wrapper-3">
+                    <div class="skill-btn locked" id="skill-3"
+                        style="--skill-color:#bc13fe; --skill-color-rgb:188,19,254" onclick="useSkill(3)">
+                        <div class="skill-lock-icon">🔒</div>
+                        <div class="skill-content">
+                            <span class="skill-icon">🌀</span>
+                            <span class="skill-label">VOID</span>
+                        </div>
+                    </div>
+                    <div class="skill-cost-badge" id="cost-3">80</div>
                 </div>
             </div>
         </div>
-        
-        <div class="tutorial" id="tutorial-text">Keep Orb Volume Down • High Heat = Eruption</div>
-        
-        <!-- SKILLS BAR -->
-        <div class="skills-bar">
-            <div class="skill-wrapper" id="skill-wrapper-1">
-                <div class="skill-btn locked" id="skill-1"
-                     style="--skill-color:#00f3ff; --skill-color-rgb:0,243,255"
-                     onclick="useSkill(1)">
-                    <div class="skill-lock-icon">🔒</div>
-                    <div class="skill-content">
-                        <span class="skill-icon">⚡</span>
-                        <span class="skill-label">SHAKE</span>
-                    </div>
-                </div>
-                <div class="skill-cost-badge" id="cost-1">15</div>
-            </div>
 
-            <div class="skill-wrapper" id="skill-wrapper-2">
-                <div class="skill-btn locked" id="skill-2"
-                     style="--skill-color:#00ff41; --skill-color-rgb:0,255,65"
-                     onclick="useSkill(2)">
-                    <div class="skill-lock-icon">🔒</div>
-                    <div class="skill-content">
-                        <span class="skill-icon">🔨</span>
-                        <span class="skill-label">SMASH</span>
-                    </div>
-                </div>
-                <div class="skill-cost-badge" id="cost-2">40</div>
-            </div>
-
-            <div class="skill-wrapper" id="skill-wrapper-3">
-                <div class="skill-btn locked" id="skill-3"
-                     style="--skill-color:#bc13fe; --skill-color-rgb:188,19,254"
-                     onclick="useSkill(3)">
-                    <div class="skill-lock-icon">🔒</div>
-                    <div class="skill-content">
-                        <span class="skill-icon">🌀</span>
-                        <span class="skill-label">VOID</span>
-                    </div>
-                </div>
-                <div class="skill-cost-badge" id="cost-3">80</div>
-            </div>
+        <div id="game-over-screen">
+            <h1 style="color: #ff003c; text-shadow: 0 0 20px #ff003c;">CRITICAL ERROR</h1>
+            <p>System Overloaded</p>
+            <p>Final Score: <span id="final-score">0</span></p>
+            <button class="btn" onclick="resetGame()">Reboot System</button>
         </div>
+
+        <!-- FTUE Overlay -->
+        <div id="ftue-overlay"></div>
     </div>
 
-    <div id="game-over-screen">
-        <h1 style="color: #ff003c; text-shadow: 0 0 20px #ff003c;">CRITICAL ERROR</h1>
-        <p>System Overloaded</p>
-        <p>Final Score: <span id="final-score">0</span></p>
-        <button class="btn" onclick="resetGame()">Reboot System</button>
-    </div>
-    
-    <!-- FTUE Overlay -->
-    <div id="ftue-overlay"></div>
-</div>
-
-<script type="module" src="/src/main.js"></script>
+    <script type="module" src="/src/main.js"></script>
 </body>
+
 </html>
