@@ -12,15 +12,15 @@ export function addHeat(amount) {
   if (amount > 0 && State.graceMoves > 0) {
     return false
   }
-  
+
   const prevHeat = State.systemHeat
   State.systemHeat += amount
   State.systemHeat = Math.max(0, Math.min(100, State.systemHeat))
-  
+
   if (prevHeat < ERUPTION_HEAT_THRESHOLD && State.systemHeat >= ERUPTION_HEAT_THRESHOLD) {
     triggerEruption()
   }
-  
+
   return true
 }
 
@@ -33,54 +33,47 @@ export function triggerEruption() {
   State.systemHeat = 0
   State.graceMoves = GRACE_MOVES_AFTER_ERUPTION
   State.eruptionLiftPending = 0
-  
+
+  // Clear any existing screen shake for smooth hydraulic motion
+  State.screenShake = 0
+
   let thawedCount = 0
-  
-  // 1. Launch active orbs
-  State.orbs.forEach(orb => {
-    if (!orb.inChamber) {
-      orb.vy = -18 - (Math.random() * 10)
-      orb.vx += (Math.random() - 0.5) * 10
-    }
-  })
+
+  // 1. Do NOT launch active orbs - they stay where they are
+  // No explosive effects, just hydraulic lift
 
   // 2. Thaw and queue Chamber Orbs for staged hydraulic lift
   State.orbs.forEach(orb => {
     if (orb.inChamber) {
       orb.isFrosted = false
       orb.mass = ORB_TYPES[orb.typeIndex].radius * State.scale
-      
+
       // Keep in chamber while pistons extend, then release in Orb.update().
+      // Slow, intentional hydraulic lift - 3x slower than before
       orb.hydraulicLiftFrame = 0
-      orb.hydraulicLiftDuration = 48 + Math.floor(Math.random() * 18)
+      orb.hydraulicLiftDuration = 150 + Math.floor(Math.random() * 60) // 2.5-3.5 seconds at 60fps
       orb.hydraulicStartY = orb.y
       orb.hydraulicTargetY = State.mainFloorY - orb.radius - (10 + Math.random() * 14)
-      orb.hydraulicReleaseVy = -12 - (Math.random() * 6)
+      orb.hydraulicReleaseVy = -3 - (Math.random() * 2) // Gentle release, not explosive
       orb.isHydraulicLifting = true
       orb.vy = 0
-      orb.vx += (Math.random() - 0.5) * 1.2
-      
+      orb.vx = 0 // No horizontal drift - clean lift
+
       thawedCount++
-      createParticles(orb.x, orb.y, 'var(--frost-color)')
+      // No particles - clean hydraulic motion
     }
   })
-  
+
   // 3. Refill the chamber after all hydraulic lifts finish
   if (thawedCount > 0) {
     State.eruptionLiftPending = thawedCount
   } else {
     spawnChamberBatch()
   }
-  
-  // Visuals
-  const container = document.getElementById('game-container')
-  container.classList.add('eruption')
-  setTimeout(() => container.classList.remove('eruption'), 1100)
-  
-  State.screenShake = 24
-  createFloatingText(State.canvas.width / 2, 300, "ERUPTION!", THEME.floatingTextColors.eruption, 60)
-  showLevelToast("GEOTHERMAL FLUSH", `HYDRAULIC LIFT x${thawedCount}`)
-  
+
+  // No visual effects - just the hydraulic lift
+  // No screen shake, no eruption class, no floating text, no toast
+
   updateUI()
   EventBus.emit('eruption:triggered')
 }

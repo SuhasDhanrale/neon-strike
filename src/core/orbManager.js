@@ -125,10 +125,13 @@ export class Orb {
     this.hydraulicLiftFrame++
     this.dangerRestFrames = 0
     const t = Math.min(1, this.hydraulicLiftFrame / this.hydraulicLiftDuration)
-    const eased = t * t * t // Slow-start lift to sell hydraulic piston motion
+    // Smooth ease-in-out for slow, deliberate mechanical motion
+    const eased = t < 0.5
+      ? 4 * t * t * t
+      : 1 - Math.pow(-2 * t + 2, 3) / 2
 
     this.y = this.hydraulicStartY + ((this.hydraulicTargetY - this.hydraulicStartY) * eased)
-    this.vx *= 0.92
+    this.vx *= 0.95 // Less horizontal dampening for smoother motion
     this.x += this.vx
 
     // Keep lifted orb inside horizontal bounds while pistons are active
@@ -147,11 +150,11 @@ export class Orb {
       this.hydraulicTargetY = 0
       this.isHydraulicLifting = false
 
-      // Release into main bucket physics with a gentle pop
+      // Release into main bucket - no pop, just place on floor
       this.inChamber = false
       this.hasCollided = true
-      this.vy = this.hydraulicReleaseVy
-      this.vx += (Math.random() - 0.5) * 1.5
+      this.vy = 0 // No upward velocity - just place on floor
+      this.vx = 0 // No horizontal velocity
 
       if (State.eruptionLiftPending > 0) {
         State.eruptionLiftPending--

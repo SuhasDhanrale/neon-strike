@@ -22,13 +22,13 @@ export function triggerMergeFlash(x, y, orbColor) {
 export function drawMergeFlashes(ctx) {
   mergeFlashes.forEach(f => {
     const progress = f.radius / 70
-    
+
     ctx.save()
     ctx.globalAlpha = f.alpha * (1 - progress)
     ctx.strokeStyle = f.color
     ctx.lineWidth = 3.5 * (1 - progress * 0.6)
     ctx.lineJoin = 'round'
-    
+
     // Draw jagged polygon
     ctx.beginPath()
     f.points.forEach((p, i) => {
@@ -43,21 +43,21 @@ export function drawMergeFlashes(ctx) {
     })
     ctx.closePath()
     ctx.stroke()
-    
+
     // White interior flash on first 20% of animation only
     if (progress < 0.2) {
       ctx.globalAlpha = (0.2 - progress) * 3 * 0.55
       ctx.fillStyle = '#e8ddd0'
       ctx.fill()
     }
-    
+
     ctx.restore()
-    
+
     // Animate
     f.radius += 5.5
     f.alpha -= 0.055
   })
-  
+
   // Clean up finished flashes
   mergeFlashes = mergeFlashes.filter(f => f.alpha > 0)
 }
@@ -83,27 +83,27 @@ export function updateScreenShake() {
 }
 
 // ============================================
-// ERUPTION FLASH — Full screen volcanic burst
+// ERUPTION FLASH — Subtle glow for hydraulic push
 // ============================================
 
 let eruptionFlash = { active: false, alpha: 0 }
 
 export function triggerEruptionFlash() {
-  eruptionFlash = { active: true, alpha: 1.0 }
+  eruptionFlash = { active: true, alpha: 0.5 } // Reduced initial alpha
 }
 
 export function drawEruptionFlash(ctx) {
   if (!eruptionFlash.active) return
-  
-  // Full screen ember overlay
+
+  // Subtle warm overlay (reduced from 0.4 to 0.15)
   ctx.save()
-  ctx.globalAlpha = eruptionFlash.alpha * 0.4
+  ctx.globalAlpha = eruptionFlash.alpha * 0.15
   ctx.fillStyle = '#e85d20'
   ctx.fillRect(0, 0, State.canvas.width, State.canvas.height)
   ctx.restore()
-  
-  // Animate
-  eruptionFlash.alpha -= 0.04
+
+  // Slower fade for gentle effect
+  eruptionFlash.alpha -= 0.02
   if (eruptionFlash.alpha <= 0) {
     eruptionFlash.active = false
   }
@@ -116,16 +116,16 @@ export function drawEruptionFlash(ctx) {
 export function drawHeatShimmer(ctx) {
   const heat = State.systemHeat / 100
   if (heat < 0.5) return
-  
+
   // Subtle wavy lines above chamber when hot
   ctx.save()
   ctx.globalAlpha = (heat - 0.5) * 0.3
   ctx.strokeStyle = '#e85d20'
   ctx.lineWidth = 1
-  
+
   const time = Date.now() * 0.003
   const y = State.mainFloorY - 10
-  
+
   ctx.beginPath()
   for (let x = 0; x < State.canvas.width; x += 4) {
     const offsetY = Math.sin(x * 0.02 + time) * 3
@@ -136,13 +136,13 @@ export function drawHeatShimmer(ctx) {
     }
   }
   ctx.stroke()
-  
+
   ctx.restore()
 }
 
-export default { 
-  triggerMergeFlash, 
-  drawMergeFlashes, 
+export default {
+  triggerMergeFlash,
+  drawMergeFlashes,
   applyScreenShake,
   updateScreenShake,
   triggerEruptionFlash,
@@ -170,21 +170,21 @@ export function drawPolygon(ctx, x, y, radius, sides, rotation = 0) {
     ctx.arc(x, y, radius, 0, Math.PI * 2)
     return
   }
-  
+
   ctx.beginPath()
   const angleStep = (Math.PI * 2) / sides
-  
+
   for (let i = 0; i < sides; i++) {
     const angle = angleStep * i + rotation - Math.PI / 2
     const px = x + radius * Math.cos(angle)
     const py = y + radius * Math.sin(angle)
-    
+
     if (i === 0) {
       ctx.moveTo(px, py)
     } else {
       ctx.lineTo(px, py)
     }
   }
-  
+
   ctx.closePath()
 }

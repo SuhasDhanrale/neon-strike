@@ -27,8 +27,8 @@ export function draw(ctx) {
   ctx.shadowBlur = 0
 
   // Get orb visual for current shot
-  let shooterFill = '#4a4040'
-  let shooterOutline = '#1a1410'
+  let shooterFill = '#ffffffff'
+  let shooterOutline = '#ffffffff'
 
   if (currentShot) {
     const typeIndex = currentShot.orbType || 0

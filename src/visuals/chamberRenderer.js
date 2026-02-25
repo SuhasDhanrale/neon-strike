@@ -92,40 +92,45 @@ function drawHydraulicRods(ctx) {
 
   liftingOrbs.forEach((orb, idx) => {
     const t = Math.min(1, orb.hydraulicLiftFrame / orb.hydraulicLiftDuration)
-    const pulse = 0.55 + (Math.sin((State.frameCount * 0.22) + idx) * 0.2)
-    const rodWidth = Math.max(6, orb.radius * 0.36)
-    const headWidth = rodWidth + 10
+    // Slower pulse for mechanical feel (0.08 instead of 0.22)
+    const pulse = 0.55 + (Math.sin((State.frameCount * 0.08) + idx) * 0.15)
+    const rodWidth = Math.max(8, orb.radius * 0.4) // Thicker rods for visibility
+    const headWidth = rodWidth + 12
     const rodTop = orb.y + orb.radius - 2
     const rodBottom = State.gameHeight - 4
     const rodHeight = Math.max(0, rodBottom - rodTop)
 
     if (rodHeight <= 0) return
 
-    // Rod body - flat fill
-    ctx.fillStyle = '#4a4040'
+    // Rod body - flat fill with gradient for depth
+    ctx.fillStyle = '#5a5050'
     ctx.fillRect(orb.x - rodWidth / 2, rodTop, rodWidth, rodHeight)
+
+    // Highlight stripe on rod
+    ctx.fillStyle = '#6a6060'
+    ctx.fillRect(orb.x - rodWidth / 4, rodTop, rodWidth / 3, rodHeight)
 
     // Rod outline - thick stroke
     ctx.strokeStyle = '#1a1410'
     ctx.lineWidth = 2
     ctx.strokeRect(orb.x - rodWidth / 2, rodTop, rodWidth, rodHeight)
 
-    // Rod head
-    ctx.fillStyle = lerpColor('#4a4040', '#e85d20', t * pulse)
-    ctx.fillRect(orb.x - headWidth / 2, rodTop - 5, headWidth, 7)
+    // Rod head - glows more as it extends
+    ctx.fillStyle = lerpColor('#5a5050', '#e85d20', t * pulse)
+    ctx.fillRect(orb.x - headWidth / 2, rodTop - 6, headWidth, 8)
     ctx.strokeStyle = '#1a1410'
     ctx.lineWidth = 2
-    ctx.strokeRect(orb.x - headWidth / 2, rodTop - 5, headWidth, 7)
+    ctx.strokeRect(orb.x - headWidth / 2, rodTop - 6, headWidth, 8)
   })
 
-  // Chamber glow from hydraulic activity
+  // Chamber glow from hydraulic activity - more visible
   const totalProgress = liftingOrbs.reduce((sum, orb) => {
     return sum + Math.min(1, orb.hydraulicLiftFrame / orb.hydraulicLiftDuration)
   }, 0)
   const avgProgress = totalProgress / liftingOrbs.length
 
-  // Hard edge glow rect, no blur
-  ctx.fillStyle = `rgba(232, 93, 32, ${0.08 + (0.12 * avgProgress)})`
+  // Stronger glow line at floor
+  ctx.fillStyle = `rgba(232, 93, 32, ${0.12 + (0.18 * avgProgress)})`
   ctx.fillRect(0, State.mainFloorY - 4, State.canvas.width, 8)
 }
 
