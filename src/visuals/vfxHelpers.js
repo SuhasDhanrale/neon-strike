@@ -83,33 +83,6 @@ export function updateScreenShake() {
 }
 
 // ============================================
-// ERUPTION FLASH — Subtle glow for hydraulic push
-// ============================================
-
-let eruptionFlash = { active: false, alpha: 0 }
-
-export function triggerEruptionFlash() {
-  eruptionFlash = { active: true, alpha: 0.5 } // Reduced initial alpha
-}
-
-export function drawEruptionFlash(ctx) {
-  if (!eruptionFlash.active) return
-
-  // Subtle warm overlay (reduced from 0.4 to 0.15)
-  ctx.save()
-  ctx.globalAlpha = eruptionFlash.alpha * 0.15
-  ctx.fillStyle = '#e85d20'
-  ctx.fillRect(0, 0, State.canvas.width, State.canvas.height)
-  ctx.restore()
-
-  // Slower fade for gentle effect
-  eruptionFlash.alpha -= 0.02
-  if (eruptionFlash.alpha <= 0) {
-    eruptionFlash.active = false
-  }
-}
-
-// ============================================
 // CHAMBER HEAT SHIMMER (optional, minimal)
 // ============================================
 
@@ -145,8 +118,6 @@ export default {
   drawMergeFlashes,
   applyScreenShake,
   updateScreenShake,
-  triggerEruptionFlash,
-  drawEruptionFlash,
   drawHeatShimmer,
   drawPolygon
 }

@@ -14,10 +14,6 @@ export function resolveCollisions() {
       let o1 = State.orbs[i]
       let o2 = State.orbs[j]
 
-      // Chamber Segregation - Chamber orbs cannot collide with active bucket orbs
-      if (o1.inChamber !== o2.inChamber) continue
-      if (o1.isHydraulicLifting || o2.isHydraulicLifting) continue
-
       // Piercing ghost ignores collisions
       if ((o1.ammoType === 'PIERCE' && o1.ghostTimer > 0) ||
         (o2.ammoType === 'PIERCE' && o2.ghostTimer > 0)) {
@@ -58,8 +54,8 @@ export function resolveCollisions() {
           }
         }
 
-        // Merge Logic (ONLY if neither is Frosted and neither is Geode)
-        if (!o1.isFrosted && !o2.isFrosted && !o1.isGeode && !o2.isGeode &&
+        // Merge Logic (ONLY if neither is Geode)
+        if (!o1.isGeode && !o2.isGeode &&
           o1.typeIndex === o2.typeIndex && !o1.markedForDeletion && !o2.markedForDeletion) {
 
           const mx = (o1.x + o2.x) / 2
@@ -129,7 +125,6 @@ export function resolveCollisions() {
         if (velAlongNormal > 0) continue
 
         let e = 0.5
-        if (o1.isFrosted || o2.isFrosted) e = 0.3
 
         let jVal = -(1 + e) * velAlongNormal
         jVal /= (1 / m1 + 1 / m2)

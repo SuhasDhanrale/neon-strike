@@ -18,6 +18,17 @@
         <div id="gravity-overlay"></div>
         <div id="combo-display">×2</div>
 
+        <!-- Chamber UI - Machine Base Energy Panel -->
+        <div id="chamber-ui">
+            <div id="xp-bar-track">
+                <div class="energy-bar-fill" id="xp-bar"></div>
+            </div>
+            <button id="supply-energy-btn" class="gear-supply-btn gear-supply-inactive"
+                title="Supply Energy to next gear">
+                <span class="gear-supply-label">⚡ SUPPLY</span>
+            </button>
+        </div>
+
         <div id="level-toast">
             <div class="toast-title">SYSTEM WARNING</div>
             <div class="toast-desc" id="toast-message">Gravity Increasing...</div>
@@ -30,15 +41,6 @@
             <!-- Vertical Heat Bar (Left Side) -->
             <div id="vertical-heat-container" class="vertical-bar-container left">
                 <div class="heat-bar-fill heat-calm" id="heat-bar"></div>
-            </div>
-
-            <!-- Vertical Energy Bar (Right Side) -->
-            <div id="vertical-energy-container" class="vertical-bar-container right">
-                <button id="supply-energy-btn" class="gear-supply-btn gear-supply-inactive"
-                    title="Supply Energy to next gear">
-                    <span class="gear-supply-icon">&#9889;</span>
-                </button>
-                <div class="energy-bar-fill" id="xp-bar"></div>
             </div>
 
             <!-- NEW HUD LAYOUT -->
@@ -64,7 +66,7 @@
                 </div>
             </div>
 
-            <div class="tutorial" id="tutorial-text">Keep Orb Volume Down • High Heat = Eruption</div>
+            <div class="tutorial" id="tutorial-text">Keep Orb Volume Down • High Heat = Energy Leak</div>
 
             <!-- SKILLS BAR -->
             <div class="skills-bar">

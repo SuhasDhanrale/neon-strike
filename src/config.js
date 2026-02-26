@@ -9,7 +9,6 @@ export const GEODE_SPAWN_CHANCE = 0.04
 export const SHOT_COOLDOWN_MS = 500
 export const SHOT_COOLDOWN_FRAMES = 30
 export const CHAMBER_BATCH_SIZE = 5
-export const GRACE_MOVES_AFTER_ERUPTION = 5
 export const ERUPTION_HEAT_THRESHOLD = 100
 export const SUBSTEPPING_ITERATIONS = 4
 export const DANGER_LINE_Y = 70

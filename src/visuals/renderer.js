@@ -6,7 +6,7 @@ import { draw as drawChamber } from './chamberRenderer.js'
 import { drawAll as drawOrbs, drawTrails } from './orbRenderer.js'
 import { draw as drawShooter } from './shooterRenderer.js'
 import { drawParticles, drawFloatingTexts } from './particleSystem.js'
-import { applyScreenShake, drawMergeFlashes, drawEruptionFlash, drawHeatShimmer } from './vfxHelpers.js'
+import { applyScreenShake, drawMergeFlashes, drawHeatShimmer } from './vfxHelpers.js'
 import { drawBackground } from './backgroundRenderer.js'
 
 export function draw() {
@@ -49,9 +49,6 @@ export function draw() {
 
   // 9. Merge flash bursts (jagged crack rings)
   drawMergeFlashes(ctx)
-
-  // 10. Eruption flash overlay
-  drawEruptionFlash(ctx)
 
   ctx.restore()
 }

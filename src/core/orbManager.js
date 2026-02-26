@@ -22,22 +22,10 @@ export class Orb {
 
     this.isGeode = isGeode
 
-    // Chamber Status
-    this.inChamber = false
-    this.isFrosted = false
-
     this.ammoType = ammoConfig.id
     this.ghostTimer = 0
     this.hasCollided = false
     this.dangerRestFrames = 0
-
-    // Eruption hydraulic-lift runtime state
-    this.hydraulicLiftFrame = 0
-    this.hydraulicLiftDuration = 0
-    this.hydraulicStartY = 0
-    this.hydraulicTargetY = 0
-    this.hydraulicReleaseVy = -8
-    this.isHydraulicLifting = false
 
     if (isGeode) {
       this.radius = 40 * State.scale
@@ -63,11 +51,6 @@ export class Orb {
   }
 
   update() {
-    if (this.hydraulicLiftDuration > 0) {
-      this.runHydraulicLiftStep()
-      return
-    }
-
     this.vy += NORMAL_GRAVITY
     this.vx *= FRICTION
     this.vy *= FRICTION
@@ -76,8 +59,8 @@ export class Orb {
 
     if (this.ghostTimer > 0) this.ghostTimer--
 
-    // Dynamic Floor Check
-    let targetFloorY = this.inChamber ? State.gameHeight : State.mainFloorY
+    // Floor Check
+    let targetFloorY = State.mainFloorY
 
     if (this.y + this.radius > targetFloorY) {
       this.y = targetFloorY - this.radius
@@ -110,7 +93,7 @@ export class Orb {
       Math.abs(this.vy) < GAME_OVER_SETTLE_SPEED
     const isAboveDangerLine = this.y + this.radius < DANGER_LINE_Y
 
-    if (!this.inChamber && isNearRest && isAboveDangerLine && !State.isAiming && this.hasCollided) {
+    if (isNearRest && isAboveDangerLine && !State.isAiming && this.hasCollided) {
       this.dangerRestFrames++
       if (this.dangerRestFrames >= GAME_OVER_SETTLE_FRAMES) {
         if (State.orbs.filter(o => !o.inChamber).length > 5 && State.shotCooldown <= 0) {
@@ -119,50 +102,6 @@ export class Orb {
       }
     } else {
       this.dangerRestFrames = 0
-    }
-  }
-
-  runHydraulicLiftStep() {
-    this.hydraulicLiftFrame++
-    this.dangerRestFrames = 0
-    const t = Math.min(1, this.hydraulicLiftFrame / this.hydraulicLiftDuration)
-    // Smooth ease-in-out for slow, deliberate mechanical motion
-    const eased = t < 0.5
-      ? 4 * t * t * t
-      : 1 - Math.pow(-2 * t + 2, 3) / 2
-
-    this.y = this.hydraulicStartY + ((this.hydraulicTargetY - this.hydraulicStartY) * eased)
-    this.vx *= 0.95 // Less horizontal dampening for smoother motion
-    this.x += this.vx
-
-    // Keep lifted orb inside horizontal bounds while pistons are active
-    if (this.x - this.radius < 0) {
-      this.x = this.radius
-      this.vx *= -0.2
-    } else if (this.x + this.radius > State.canvas.width) {
-      this.x = State.canvas.width - this.radius
-      this.vx *= -0.2
-    }
-
-    if (t >= 1) {
-      this.hydraulicLiftDuration = 0
-      this.hydraulicLiftFrame = 0
-      this.hydraulicStartY = 0
-      this.hydraulicTargetY = 0
-      this.isHydraulicLifting = false
-
-      // Release into main bucket - no pop, just place on floor
-      this.inChamber = false
-      this.hasCollided = true
-      this.vy = 0 // No upward velocity - just place on floor
-      this.vx = 0 // No horizontal velocity
-
-      if (State.eruptionLiftPending > 0) {
-        State.eruptionLiftPending--
-        if (State.eruptionLiftPending === 0) {
-          spawnChamberBatch()
-        }
-      }
     }
   }
 
@@ -176,7 +115,6 @@ export class Orb {
       value: this.value,
       typeIndex: this.typeIndex,
       isGeode: this.isGeode,
-      isFrosted: this.isFrosted,
       ammoType: this.ammoType,
       ghostTimer: this.ghostTimer,
       hp: this.hp
@@ -240,19 +178,15 @@ export function spawnOrb(angle, power) {
   State.shotCooldown = SHOT_COOLDOWN_FRAMES
 
   // Geothermal Heat Mechanic
-  if (State.graceMoves > 0) {
-    State.graceMoves--
-  } else {
-    // Calculate Population Density (ignore Geodes and Chamber orbs)
-    let activeCount = State.orbs.filter(o => !o.isGeode && !o.inChamber).length
+  // Calculate Population Density (ignore Geodes and Chamber orbs)
+  let activeCount = State.orbs.filter(o => !o.isGeode && !o.inChamber).length
 
-    if (activeCount >= HEAT_THRESHOLDS.CRITICAL_COUNT) {
-      addHeat(HEAT_THRESHOLDS.CRITICAL_HEAT)
-    } else if (activeCount >= HEAT_THRESHOLDS.HOT_COUNT) {
-      addHeat(HEAT_THRESHOLDS.HOT_HEAT)
-    } else if (activeCount < HEAT_THRESHOLDS.COOL_COUNT) {
-      addHeat(-HEAT_THRESHOLDS.COOL_REDUCTION)
-    }
+  if (activeCount >= HEAT_THRESHOLDS.CRITICAL_COUNT) {
+    addHeat(HEAT_THRESHOLDS.CRITICAL_HEAT)
+  } else if (activeCount >= HEAT_THRESHOLDS.HOT_COUNT) {
+    addHeat(HEAT_THRESHOLDS.HOT_HEAT)
+  } else if (activeCount < HEAT_THRESHOLDS.COOL_COUNT) {
+    addHeat(-HEAT_THRESHOLDS.COOL_REDUCTION)
   }
 
   updateUI()
@@ -295,8 +229,6 @@ export function resetGame() {
 
   State.comboCount = 0
   State.systemHeat = 0
-  State.graceMoves = 0
-  State.eruptionLiftPending = 0
   State.isGameOver = false
 
   for (let k in State.skills) {
@@ -319,26 +251,11 @@ export function resetGame() {
     State.orbs.push(g)
   }
 
-  // Spawn Frosted Bedrock in Chamber
-  spawnChamberBatch()
-
+  // Spawn Chamber Orbs
   updateUI()
 }
 
-export function spawnChamberBatch() {
-  for (let i = 0; i < 5; i++) {
-    let typeIdx = Math.floor(Math.random() * 4)
-    let spaceX = State.canvas.width / 5
-    let nx = (spaceX * i) + (spaceX / 2)
-
-    // Spawn them securely below the main floor line
-    let newFrost = new Orb(nx, State.gameHeight - 20, typeIdx, false, AMMO_TYPES.STANDARD)
-    newFrost.inChamber = true
-    newFrost.isFrosted = true
-    newFrost.mass *= 2
-    State.orbs.push(newFrost)
-  }
-}
+export function spawnChamberBatch() { /* chamber removed */ }
 
 // ─── FTUE ORB PLACEMENT ──────────────────────────────
 

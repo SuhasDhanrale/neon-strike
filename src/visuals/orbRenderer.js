@@ -39,8 +39,6 @@ function drawOrb(ctx, orb) {
 
   if (orb.isGeode) {
     drawGeodeOrb(ctx, orb, x, y, radius, shape)
-  } else if (orb.isFrosted) {
-    drawFrostedOrb(ctx, orb, x, y, radius, shape)
   } else if (orb.ammoType === 'PIERCE' && orb.ghostTimer > 0) {
     drawPierceOrb(ctx, orb, x, y, radius, visual, shape)
   } else {

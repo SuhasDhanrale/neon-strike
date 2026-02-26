@@ -31,8 +31,6 @@ export const State = {
 
   // Heat
   systemHeat: 0,
-  graceMoves: 0,
-  eruptionLiftPending: 0,
 
   // Aim
   isAiming: false,

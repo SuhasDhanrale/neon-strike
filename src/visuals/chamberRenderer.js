@@ -1,5 +1,5 @@
 // Volcanic Print Chamber Renderer
-// Geothermal chamber with halftone heat dots, hard offset lines
+// Geothermal chamber with halftone heat dots, hard offset lines - now machine base style
 
 import { State } from '../state.js'
 import { THEME, lerpColor } from './theme.js'
@@ -10,40 +10,77 @@ export function draw(ctx) {
   const heat = systemHeat / 100
 
   // ============================================
-  // 1. GLASS BASE - translucent dark panel (glass effect)
+  // 1. MACHINE BASE PANEL - Thick dark panel with bolts/rivets
   // ============================================
-  ctx.fillStyle = `rgba(10, 5, 2, 0.55)`
+  ctx.fillStyle = '#1a1410'
   ctx.fillRect(0, mainFloorY, canvas.width, chamberH)
 
-  // Glass top edge highlight
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.07)'
-  ctx.lineWidth = 1
-  ctx.setLineDash([])
+  // Panel border (top edge - thick)
+  ctx.fillStyle = '#2d2520'
+  ctx.fillRect(0, mainFloorY, canvas.width, 6)
+
+  // Corner bolts/rivets
+  const boltRadius = 5
+  const boltColor = '#4a4040'
+  const boltHighlight = '#6b5e58'
+
+  // Top-left bolt
+  ctx.fillStyle = boltColor
   ctx.beginPath()
-  ctx.moveTo(0, mainFloorY)
-  ctx.lineTo(canvas.width, mainFloorY)
+  ctx.arc(12, mainFloorY + 12, boltRadius, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.fillStyle = boltHighlight
+  ctx.beginPath()
+  ctx.arc(11, mainFloorY + 11, boltRadius * 0.5, 0, Math.PI * 2)
+  ctx.fill()
+
+  // Top-right bolt
+  ctx.fillStyle = boltColor
+  ctx.beginPath()
+  ctx.arc(canvas.width - 12, mainFloorY + 12, boltRadius, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.fillStyle = boltHighlight
+  ctx.beginPath()
+  ctx.arc(canvas.width - 13, mainFloorY + 11, boltRadius * 0.5, 0, Math.PI * 2)
+  ctx.fill()
+
+  // Bottom-left bolt
+  ctx.fillStyle = boltColor
+  ctx.beginPath()
+  ctx.arc(12, canvas.height - 12, boltRadius, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.fillStyle = boltHighlight
+  ctx.beginPath()
+  ctx.arc(11, canvas.height - 13, boltRadius * 0.5, 0, Math.PI * 2)
+  ctx.fill()
+
+  // Bottom-right bolt
+  ctx.fillStyle = boltColor
+  ctx.beginPath()
+  ctx.arc(canvas.width - 12, canvas.height - 12, boltRadius, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.fillStyle = boltHighlight
+  ctx.beginPath()
+  ctx.arc(canvas.width - 13, canvas.height - 13, boltRadius * 0.5, 0, Math.PI * 2)
+  ctx.fill()
+
+  // ============================================
+  // 2. HORIZONTAL PIPE/VENT LINES - Mechanical feel
+  // ============================================
+  ctx.strokeStyle = '#2d2520'
+  ctx.lineWidth = 3
+
+  // Top pipe line
+  ctx.beginPath()
+  ctx.moveTo(30, mainFloorY + 28)
+  ctx.lineTo(canvas.width - 30, mainFloorY + 28)
   ctx.stroke()
 
-  // ============================================
-  // 2. HALFTONE HEAT DOTS - real canvas dots, not gradient
-  // ============================================
-  if (heat > 0.05) {
-    ctx.save()
-    ctx.globalAlpha = heat * 0.5
-    ctx.fillStyle = '#e85d20'
-
-    const spacing = THEME.chamber.halftoneSpacing
-    const dotR = THEME.chamber.halftoneDotR
-
-    for (let px = spacing / 2; px < canvas.width; px += spacing) {
-      for (let py = mainFloorY + 8; py < canvas.height; py += spacing) {
-        ctx.beginPath()
-        ctx.arc(px, py, dotR, 0, Math.PI * 2)
-        ctx.fill()
-      }
-    }
-    ctx.restore()
-  }
+  // Bottom pipe line
+  ctx.beginPath()
+  ctx.moveTo(30, canvas.height - 20)
+  ctx.lineTo(canvas.width - 30, canvas.height - 20)
+  ctx.stroke()
 
   // ============================================
   // 3. FLOOR LINE - hard shadow behind, then colored dashed line
@@ -79,59 +116,4 @@ export function draw(ctx) {
   ctx.textAlign = 'center'
   ctx.fillText('GEOTHERMAL CHAMBER', canvas.width / 2, mainFloorY + 22)
   ctx.restore()
-
-  // ============================================
-  // 5. HYDRAULIC RODS (if lifting)
-  // ============================================
-  drawHydraulicRods(ctx)
 }
-
-function drawHydraulicRods(ctx) {
-  const liftingOrbs = State.orbs.filter(orb => orb.hydraulicLiftDuration > 0)
-  if (liftingOrbs.length === 0) return
-
-  liftingOrbs.forEach((orb, idx) => {
-    const t = Math.min(1, orb.hydraulicLiftFrame / orb.hydraulicLiftDuration)
-    // Slower pulse for mechanical feel (0.08 instead of 0.22)
-    const pulse = 0.55 + (Math.sin((State.frameCount * 0.08) + idx) * 0.15)
-    const rodWidth = Math.max(8, orb.radius * 0.4) // Thicker rods for visibility
-    const headWidth = rodWidth + 12
-    const rodTop = orb.y + orb.radius - 2
-    const rodBottom = State.gameHeight - 4
-    const rodHeight = Math.max(0, rodBottom - rodTop)
-
-    if (rodHeight <= 0) return
-
-    // Rod body - flat fill with gradient for depth
-    ctx.fillStyle = '#5a5050'
-    ctx.fillRect(orb.x - rodWidth / 2, rodTop, rodWidth, rodHeight)
-
-    // Highlight stripe on rod
-    ctx.fillStyle = '#6a6060'
-    ctx.fillRect(orb.x - rodWidth / 4, rodTop, rodWidth / 3, rodHeight)
-
-    // Rod outline - thick stroke
-    ctx.strokeStyle = '#1a1410'
-    ctx.lineWidth = 2
-    ctx.strokeRect(orb.x - rodWidth / 2, rodTop, rodWidth, rodHeight)
-
-    // Rod head - glows more as it extends
-    ctx.fillStyle = lerpColor('#5a5050', '#e85d20', t * pulse)
-    ctx.fillRect(orb.x - headWidth / 2, rodTop - 6, headWidth, 8)
-    ctx.strokeStyle = '#1a1410'
-    ctx.lineWidth = 2
-    ctx.strokeRect(orb.x - headWidth / 2, rodTop - 6, headWidth, 8)
-  })
-
-  // Chamber glow from hydraulic activity - more visible
-  const totalProgress = liftingOrbs.reduce((sum, orb) => {
-    return sum + Math.min(1, orb.hydraulicLiftFrame / orb.hydraulicLiftDuration)
-  }, 0)
-  const avgProgress = totalProgress / liftingOrbs.length
-
-  // Stronger glow line at floor
-  ctx.fillStyle = `rgba(232, 93, 32, ${0.12 + (0.18 * avgProgress)})`
-  ctx.fillRect(0, State.mainFloorY - 4, State.canvas.width, 8)
-}
-
-export default { draw }

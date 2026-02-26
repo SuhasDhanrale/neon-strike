@@ -1,28 +1,104 @@
-Implementation Plan (to complete the refactor correctly)
+Bug Fixes: Chamber Orbs & Chamber UI Positioning
+Two bugs found after initial implementation.
 
-Stabilize FTUE overlay bootstrapping in ftueOverlay.js by adding ensureOverlayMarkup() so the existing empty #ftue-overlay container from index.html always gets the required child nodes before show() runs.
+Bug 1 — Chamber Orbs Still Spawning
+Root cause: 
+spawnChamberBatch()
+ still sets orb.inChamber = true and is called from both 
+resetGame()
+ and 
+triggerEruption()
+. Orb.update() still has special floor logic for inChamber orbs. Chamber physics segregation still runs in 
+physics.js
+.
 
-Fix FTUE progression gating in ftueManager.js and ftueOverlay.js by clearing/rebinding step listeners per step, enabling tap only for waitFor: 'tap', and forcing first_shot/first_merge to advance only via events.
+Fix
+[MODIFY] 
+orbManager.js
+resetGame()
+ — Remove the 
+spawnChamberBatch()
+ call (lines 257–258)
+spawnChamberBatch()
+ — Delete the entire function body; replace with empty stub so imports don't break:
+js
+export function spawnChamberBatch() { /* chamber removed */ }
+Orb.update() — Remove the inChamber floor logic:
+js
+// REMOVE THIS:
+let targetFloorY = this.inChamber ? State.gameHeight : State.mainFloorY
+// REPLACE WITH:
+let targetFloorY = State.mainFloorY
+Orb
+ constructor — Remove this.inChamber = false
+Orb.getDrawData() — Remove inChamber field (if present)
+[MODIFY] 
+physics.js
+Remove the if (o1.inChamber !== o2.inChamber) continue line — no more chamber segregation
+[MODIFY] 
+heatSystem.js
+Remove 
+spawnChamberBatch()
+ call and its import (it's no longer needed here)
+Remove unused imports: ORB_TYPES, createParticles, createFloatingText, 
+showLevelToast
+, THEME
+Bug 2 — Chamber UI Not Aligned to Canvas
+Root cause: #chamber-ui is position: absolute; bottom: 0 inside #game-container, but the canvas is centered, has a 140px top margin, and is not full-container width on desktop. There's no JS dynamically positioning #chamber-ui to match the canvas.
 
-Make FTUE playable from step 1 by initializing shooter state and ammo queue in startFTUE() (State.canFire, cooldown reset, queue fill), and add a defensive fallback in spawnOrb() in orbManager.js if queue data is missing.
+main.js
+ 
+handleResize()
+ still references dead #vertical-energy-container (lines 87–97) and doesn't set up #chamber-ui.
 
-Remove duplicated ammo award logic from physics.js and centralize to one source (orbManager.awardAmmo or a new ammo module) so geode crack events use a single implementation path.
+Fix
+[MODIFY] 
+main.js
+Replace the dead #vertical-energy-container positioning block (lines 86–97) with #chamber-ui positioning:
 
-Enforce core/visual separation by removing direct DOM writes from core modules in scoring.js, physics.js, and orbManager.js; route UI updates through uiRenderer.js and state/event changes.
+js
+// Position chamber-ui to overlay the canvas (bottom portion)
+const chamberUI = document.getElementById('chamber-ui')
+const hc = document.getElementById('vertical-heat-container')
+if (chamberUI) {
+  chamberUI.style.left = State.canvas.offsetLeft + 'px'
+  chamberUI.style.width = State.canvas.width + 'px'
+  chamberUI.style.top = (State.canvas.offsetTop + State.canvas.height) + 'px'
+}
+if (hc) {
+  hc.style.left = State.canvas.offsetLeft + 'px'
+  hc.style.top = State.canvas.offsetTop + 'px'
+  hc.style.height = State.canvas.height + 'px'
+}
+NOTE
 
-Fix scoring threshold drift in scoring.js by using LEVEL_THRESHOLDS from config.js instead of hardcoded numbers.
+chamberUI.style.top = canvas top + canvas height puts it just below the canvas bottom edge — i.e., at the start of the mainFloorY zone.
 
-Correct VFX timing in gameLoop.js and vfxHelpers.js so screen shake decays once per frame (remove double decay path).
+[MODIFY] 
+styles.css
+Change #chamber-ui positioning so it's driven by JS (remove conflicting bottom: 0):
 
-Align FTUE highlight selectors with current HUD DOM in ftueOverlay.js (or update HUD markup) to ensure heat_bar, energy_bar, and skills_bar highlights always resolve.
+css
+#chamber-ui {
+    position: absolute;
+    /* left, top, width are set dynamically by handleResize() in main.js */
+    height: 80px;   /* matches FLOOR_OFFSET (80px) from config.js */
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    box-sizing: border-box;
+    background: linear-gradient(180deg, #1a1410 0%, #0d0a08 100%);
+    border-top: 3px solid #2d2520;
+    z-index: 15;
+    gap: 12px;
+}
+IMPORTANT
 
-Update prompt inconsistencies in neon-strike-vscode-agent-prompt.md, especially “9 FTUE steps” vs actual 10 steps, so implementation instructions match reality.
+Height is 80px to match FLOOR_OFFSET = 80 in 
+config.js
+ — the exact height of the chamber zone below mainFloorY.
 
-Run verification: npm run build, first-run FTUE walkthrough, skip flow, second-run no-FTUE flow, first shot fires, first merge step advances, eruption/skills/score still behave identically.
-
-Definition of done
-
-No FTUE runtime errors on fresh localStorage.
-FTUE steps cannot be skipped incorrectly.
-Core logic files contain no direct UI DOM mutation.
-Build passes and gameplay parity is preserved
+Verification
+No orbs below floor — After reset, no orbs should appear in the machine base zone. Only the canvas chamber renderer draws in that area.
+Chamber UI aligned — The energy bar + supply button should sit flush inside the machine base panel at the bottom of the canvas (not full-page width).
+No console errors — No missing inChamber, graceMoves references.

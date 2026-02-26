@@ -156,7 +156,7 @@ export const uiRenderer = {
     if (!energyFillEl) return
 
     const pct = (State.currentEnergy / State.maxEnergy) * 100
-    energyFillEl.style.height = pct + '%'
+    energyFillEl.style.width = pct + '%'
 
     // Handle drain animation
     if (GearSystem.isDrainingEnergy()) {

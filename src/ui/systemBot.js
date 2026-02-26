@@ -18,7 +18,8 @@ const LORE_SCENARIOS = [
 const GAMEPLAY_OVERRIDE = {
     energy_full: { header: "ENERGY MAXED", subtext: "Capacity reached. Supply energy to the background mechanisms immediately.", type: "energy" },
     energy_draining: { header: "ENERGY DRAINING", subtext: "Background mechanisms consuming power. Keep supply active.", type: "energy" },
-    heat_critical: { header: "SYSTEM OVERHEAT", subtext: "WARNING: The chamber is critically full. Reduce orb volume to prevent eruption.", type: "heat" }
+    heat_critical: { header: "SYSTEM OVERHEAT", subtext: "WARNING: The chamber is critically full. Reduce orb volume to prevent eruption.", type: "heat" },
+    heat_leak: { header: "ENERGY BREACH", subtext: "WARNING: Overheat event. Energy reserves vented to prevent meltdown.", type: "heat" }
 }
 
 export const SystemBot = {
@@ -32,6 +33,7 @@ export const SystemBot = {
         EventBus.on('state:energy_full', () => this.queueGameplayEvent('energy_full'))
         EventBus.on('state:energy_draining', () => this.queueGameplayEvent('energy_draining'))
         EventBus.on('state:heat_critical', () => this.queueGameplayEvent('heat_critical'))
+        EventBus.on('state:heat_leak', () => this.queueGameplayEvent('heat_leak'))
     },
 
     setInitialGearState(gearCount) {
