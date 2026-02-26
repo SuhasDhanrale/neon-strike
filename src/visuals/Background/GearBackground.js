@@ -138,6 +138,11 @@ let _glitchInterval = null
 let _internalSpeed = 0
 let _lastTime = 0
 
+// Gear unlock VFX state
+let _unlockShakeActive = false   // blocks applyVisualState() from overwriting animate during unlock
+let _unlockFlashActive = false   // blocks applyVisualState() from touching flash during unlock
+let _gearUnlockSpeedBoost = 0   // additive speed boost, decays per frame
+
 // ============================================
 // BUILD THE SVG DOM — called once on init
 // ============================================
@@ -427,7 +432,10 @@ function applyVisualState(activeGears) {
     }
 
     // Flash overlay (cyan flash)
-    if (showFlash || isGlitching) {
+    // Skip if unlock flash is active (let it control the flash)
+    if (_unlockFlashActive) {
+        // Unlock flash is in control - don't touch flashOverlayEl
+    } else if (showFlash || isGlitching) {
         flashOverlayEl.setAttribute('opacity', showFlash ? '0.15' : '0.08')
         flashOverlayEl.style.transition = isGlitching ? 'opacity 0.075s' : 'opacity 0.7s ease-out'
     } else {
@@ -436,7 +444,10 @@ function applyVisualState(activeGears) {
     }
 
     // Screen shake CSS animation (powerSurge triggers on showFlash in React spec)
-    if (showFlash) {
+    // Skip if unlock shake is active (let it control the animation)
+    if (_unlockShakeActive) {
+        // Unlock shake is in control - don't touch shakeContainerEl
+    } else if (showFlash) {
         shakeContainerEl.style.animation = 'gearPowerSurge 0.5s ease-in-out infinite'
     } else if (isGlitching) {
         shakeContainerEl.style.animation = 'gearGlitchShake 0.2s ease-in-out infinite'
@@ -525,6 +536,19 @@ export const GearBackground = {
           50% { transform: translate(2px, -2px); }
           75% { transform: translate(-2px, -2px); }
         }
+        @keyframes gearUnlockShake {
+          0%   { transform: translate(0, 0) rotate(0deg); }
+          8%   { transform: translate(-8px, -6px) rotate(-0.8deg); }
+          16%  { transform: translate(9px, 5px) rotate(0.6deg); }
+          24%  { transform: translate(-7px, 7px) rotate(-0.5deg); }
+          32%  { transform: translate(8px, -8px) rotate(0.9deg); }
+          40%  { transform: translate(-6px, 4px) rotate(-0.4deg); }
+          50%  { transform: translate(5px, -5px) rotate(0.5deg); }
+          60%  { transform: translate(-4px, 3px) rotate(-0.3deg); }
+          75%  { transform: translate(3px, -2px) rotate(0.2deg); }
+          90%  { transform: translate(-1px, 1px) rotate(-0.1deg); }
+          100% { transform: translate(0, 0) rotate(0deg); }
+        }
       `
             document.head.appendChild(style)
         }
@@ -597,6 +621,13 @@ export const GearBackground = {
             _internalSpeed = (size / total) * 2.5;
         }
 
+        // Apply gear unlock speed boost (additive, decays naturally)
+        if (_gearUnlockSpeedBoost > 0) {
+            _internalSpeed += _gearUnlockSpeedBoost
+            _gearUnlockSpeedBoost *= 0.93  // exponential decay — fades over ~40 frames (≈660ms @60fps)
+            if (_gearUnlockSpeedBoost < 0.1) _gearUnlockSpeedBoost = 0
+        }
+
         angleRef += _internalSpeed * (safeDt / 16.66);
 
         // 4. Turbine (very slow)
@@ -621,6 +652,57 @@ export const GearBackground = {
             }
         })
     },
+}
+
+// ============================================
+// GEAR UNLOCK VISUAL EFFECTS
+// ============================================
+
+/**
+ * Triggers the dramatic gear unlock sequence:
+ * - Bright flash-bang (white/cyan overlay)
+ * - Heavy screen shake
+ * - Spark rev-up (cyan burst)
+ * - Gear speed boost
+ */
+export function triggerGearUnlockSequence() {
+    // 1. FLASH — bright white-cyan spike, then fade
+    _unlockFlashActive = true
+    flashOverlayEl.setAttribute('fill', '#ffffff')          // pure white blast
+    flashOverlayEl.style.transition = 'opacity 0.08s ease-in'
+    flashOverlayEl.setAttribute('opacity', '0.55')          // very bright
+    setTimeout(() => {
+        flashOverlayEl.style.transition = 'opacity 1.2s ease-out'
+        flashOverlayEl.setAttribute('opacity', '0')
+        // release after fade-out is mostly done
+        setTimeout(() => {
+            _unlockFlashActive = false
+            flashOverlayEl.setAttribute('fill', '#22d3ee')  // restore normal color
+        }, 1200)
+    }, 150)                                                  // hold peak for 150ms
+
+    // 2. SHAKE — violent, one-shot, 600ms
+    _unlockShakeActive = true
+    shakeContainerEl.style.animation = 'gearUnlockShake 0.6s ease-out forwards'
+    setTimeout(() => {
+        shakeContainerEl.style.animation = ''
+        _unlockShakeActive = false
+        // Let applyVisualState re-evaluate the animation from current state
+    }, 650)
+
+    // 3. SPARK REV-UP — cyan burst color + faster animation for 1000ms
+    sparkEls.forEach((sparkEl, i) => {
+        const s = sparks[i]
+        sparkEl.setAttribute('fill', '#00ffff')
+        sparkEl.style.animation = `floatSpark ${s.duration * 0.2}s linear ${s.delay}s infinite`
+    })
+    setTimeout(() => {
+        // Restore to whatever applyVisualState would normally set
+        // Leave it for the next applyVisualState call (called by update())
+    }, 1000)
+
+    // 4. SPEED BOOST — additive, decays in update() loop naturally
+    _gearUnlockSpeedBoost = 35   // peak additive boost on top of whatever base speed is
 }
 
 export default GearBackground

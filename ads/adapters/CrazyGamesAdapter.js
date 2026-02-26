@@ -22,6 +22,7 @@ const CRAZYGAMES_SDK_SCRIPT_ID = 'crazygames-sdk-v3';
 const CRAZYGAMES_SDK_SCRIPT_SRC = 'https://sdk.crazygames.com/crazygames-sdk-v3.js';
 const CRAZYGAMES_SDK_READY_TIMEOUT_MS = 15000;
 const CRAZYGAMES_AD_TIMEOUT_MS = 45000;
+const CRAZYGAMES_BANNER_COOLDOWN_MS = 30000;
 
 export class CrazyGamesAdapter extends BaseAdapter {
     constructor() {
@@ -34,6 +35,7 @@ export class CrazyGamesAdapter extends BaseAdapter {
         this.adInProgress = false;
         this.resumeGameplayAfterAd = false;
         this.settingsListener = null;
+        this.bannerLastRequestAt = new Map();
         this.currentSettings = {
             muteAudio: false,
             disableChat: false
@@ -284,9 +286,7 @@ export class CrazyGamesAdapter extends BaseAdapter {
         try {
             const containerId = `crazygames-banner-${position}`;
             let container = document.getElementById(containerId);
-            const isWide = window.innerWidth >= 728;
-            const width = isWide ? 728 : 320;
-            const height = isWide ? 90 : 50;
+            const { width, height } = this._pickStaticBannerSize();
 
             if (!container) {
                 container = document.createElement('div');
@@ -306,24 +306,55 @@ export class CrazyGamesAdapter extends BaseAdapter {
                 container.style.height = `${height}px`;
             }
 
-            // SDK v3 expects id/width/height for static banners.
-            await this.sdk.banner.requestBanner({
-                id: containerId,
-                width,
-                height
-            });
+            const now = Date.now();
+            const lastRequestAt = this.bannerLastRequestAt.get(containerId) || 0;
+            if (now - lastRequestAt < CRAZYGAMES_BANNER_COOLDOWN_MS) {
+                this.activeBanners.set(position, { container, containerId, kind: 'static' });
+                this.log('Banner request skipped due to cooldown', { position, cooldownMs: CRAZYGAMES_BANNER_COOLDOWN_MS });
+                return { success: true };
+            }
 
-            this.activeBanners.set(position, { container, containerId });
-            this.log('Banner displayed', { position, width, height });
+            // Static banner path (preferred on CrazyGames).
+            await this.sdk.banner.requestBanner({ id: containerId, width, height });
+            this.bannerLastRequestAt.set(containerId, now);
+            this.activeBanners.set(position, { container, containerId, kind: 'static' });
+            this.log('Static banner displayed', { position, width, height });
 
             return { success: true };
         } catch (error) {
-            this.log('Banner request failed', {
-                code: error.code || 'unknown',
-                message: error.message || error
-            });
-            return { success: false, error: error.message || 'Banner failed' };
+            // Fallback: responsive banners can recover from size visibility issues.
+            if (typeof this.sdk?.banner?.requestResponsiveBanner === 'function') {
+                const containerId = `crazygames-banner-${position}`;
+                try {
+                    await this.sdk.banner.requestResponsiveBanner(containerId);
+                    this.bannerLastRequestAt.set(containerId, Date.now());
+                    const container = document.getElementById(containerId);
+                    if (container) {
+                        this.activeBanners.set(position, { container, containerId, kind: 'responsive' });
+                    }
+                    this.log('Responsive banner fallback displayed', { position });
+                    return { success: true };
+                } catch (fallbackError) {
+                    this.log('Responsive banner fallback failed', {
+                        code: fallbackError?.code || 'unknown',
+                        message: fallbackError?.message || fallbackError
+                    });
+                }
+            }
+
+            this.log('Banner request failed', { code: error?.code || 'unknown', message: error?.message || error });
+            return { success: false, error: error?.message || 'Banner failed' };
         }
+    }
+
+    _pickStaticBannerSize() {
+        const viewportWidth = window.innerWidth || 320;
+
+        if (viewportWidth >= 970) return { width: 970, height: 250 };
+        if (viewportWidth >= 728) return { width: 728, height: 90 };
+        if (viewportWidth >= 468) return { width: 468, height: 60 };
+        if (viewportWidth >= 320) return { width: 320, height: 50 };
+        return { width: 300, height: 250 };
     }
 
     async hideBanner(position = null) {

@@ -4,7 +4,13 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:crazygames": "vite --mode crazygames",
+    "dev:poki": "vite --mode poki",
+    "dev:gamedistribution": "vite --mode gamedistribution",
     "build": "vite build",
+    "build:crazygames": "vite build --mode crazygames",
+    "build:poki": "vite build --mode poki",
+    "build:gamedistribution": "vite build --mode gamedistribution",
     "preview": "vite preview"
   },
   "devDependencies": {

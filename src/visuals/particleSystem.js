@@ -5,6 +5,51 @@ import { State } from '../state.js'
 import { THEME } from './theme.js'
 
 // ============================================
+// GEAR UNLOCK EMBER — Fountain explosion for gear unlock celebration
+// ============================================
+
+export class GearUnlockEmber {
+  constructor(x, y) {
+    this.x = x
+    this.y = y
+    // Fountain cone: roughly upward (between -110° and -70° from horizontal)
+    // But allow wide scatter: -150° to -30° (mostly upward)
+    const spreadAngle = (-Math.PI / 2) + (Math.random() - 0.5) * (Math.PI * 1.2)
+    const speed = 10 + Math.random() * 22    // fast
+    this.vx = Math.cos(spreadAngle) * speed
+    this.vy = Math.sin(spreadAngle) * speed
+    this.life = 1.0
+    this.decay = 0.008 + Math.random() * 0.012   // slow decay = long lived
+    this.size = 2 + Math.random() * 5
+    // Color: mix of cyan, white, magma orange
+    const r = Math.random()
+    this.color = r < 0.45 ? '#00ffff'
+      : r < 0.7 ? '#ffffff'
+        : r < 0.85 ? '#22d3ee'
+          : '#e85d20'   // a few warm ember sparks for contrast
+  }
+  update() {
+    this.x += this.vx
+    this.y += this.vy
+    this.vx *= 0.94    // air resistance
+    this.vy *= 0.94
+    this.vy += 0.25    // gravity
+    this.life -= this.decay
+  }
+  draw(ctx) {
+    ctx.save()
+    ctx.globalAlpha = Math.max(0, this.life * this.life)   // quadratic fade
+    ctx.shadowBlur = 12
+    ctx.shadowColor = this.color
+    ctx.fillStyle = this.color
+    ctx.beginPath()
+    ctx.arc(this.x, this.y, this.size * this.life, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.restore()
+  }
+}
+
+// ============================================
 // MERGE PARTICLE — Crack Shards
 // ============================================
 
@@ -245,6 +290,18 @@ export function triggerEmbersBurst(amount = 40) {
   }
 }
 
+export function triggerGearUnlockExplosion() {
+  const screenW = State?.canvas?.width || 400
+  const screenH = State?.canvas?.height || 600
+  // Spawn from a broad base at the bottom-center
+  const count = 80 + Math.floor(Math.random() * 21)   // 80–100
+  for (let i = 0; i < count; i++) {
+    const spawnX = screenW * 0.5 + (Math.random() - 0.5) * screenW * 0.6
+    const spawnY = screenH - 10
+    State.particles.push(new GearUnlockEmber(spawnX, spawnY))
+  }
+}
+
 // ============================================
 // UPDATE & DRAW LOOPS
 // ============================================
@@ -270,11 +327,13 @@ export function drawFloatingTexts(ctx) {
 export default {
   MergeParticle,
   Particle,
+  GearUnlockEmber,
   FloatingText,
   createParticles,
   createMergeParticles,
   createFloatingText,
   triggerEmbersBurst,
+  triggerGearUnlockExplosion,
   updateParticles,
   drawParticles,
   drawFloatingTexts

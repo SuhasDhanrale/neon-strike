@@ -6,6 +6,8 @@
 import { State } from '../state.js'
 import { GEAR_SYSTEM } from '../config.js'
 import { EventBus } from '../eventBus.js'
+import { triggerGearUnlockSequence } from '../visuals/Background/GearBackground.js'
+import * as ParticleSystem from '../visuals/particleSystem.js'
 
 // ============================================
 // MODULE STATE
@@ -14,6 +16,23 @@ let supplyBtn = null
 let isDraining = false
 let drainSpeed = 0 // Energy units per frame to drain
 let lastButtonState = null // track state to prevent console spam
+let hasWarnedMissingGearUnlockExplosion = false
+
+function triggerGearUnlockExplosionSafe() {
+    const triggerFn =
+        ParticleSystem.triggerGearUnlockExplosion
+        || ParticleSystem.default?.triggerGearUnlockExplosion
+
+    if (typeof triggerFn === 'function') {
+        triggerFn()
+        return
+    }
+
+    if (!hasWarnedMissingGearUnlockExplosion) {
+        console.warn('[GearSystem] triggerGearUnlockExplosion is missing from particleSystem.js')
+        hasWarnedMissingGearUnlockExplosion = true
+    }
+}
 
 // ============================================
 // HELPERS
@@ -190,6 +209,12 @@ export const GearSystem = {
                     backdrop.classList.remove('glass-revealed')
                     bgSvg.classList.add('global-blur-active')
                 }, REVEAL_DURATION_MS)
+            })
+
+            // Trigger dramatic visual effects for gear unlock
+            EventBus.on('celebration:gear_unlocked', () => {
+                triggerGearUnlockSequence()    // SVG: shake + flash + spark boost + gear rev-up
+                triggerGearUnlockExplosionSafe()   // Canvas: 80-100 embers
             })
         }
     },
