@@ -161,6 +161,37 @@ export const GearSystem = {
         // Ensure starting state is visually correct on load/refresh
         console.log(`[GearSystem] Initialized. Active Gears: ${State.activeGears.size}, Energy Target: ${State.gearEnergyTarget}, Current Energy: ${State.currentEnergy}`);
         updateSupplyButton()
+
+        // --- HTML DOM FROSTED GLASS LOGIC ---
+        const backdrop = document.getElementById('glass-backdrop')
+
+        // Wait for the SVG to be appended (it's done in GearBackground.init synchronously before GearSystem.init)
+        const bgSvg = document.getElementById('gear-background-svg')
+
+        if (backdrop && bgSvg) {
+            const REVEAL_DURATION_MS = 3500; // <-- Change this to adjust how long the gears stay revealed (e.g., 5000 for 5s)
+
+            // ALWAYS start frosted, regardless of whether gears are unlocked or not
+            bgSvg.classList.add('global-blur-active')
+            backdrop.classList.remove('glass-revealed')
+
+            let frostTimeout;
+
+            // Listen for future gear unlocks specifically
+            EventBus.on('celebration:gear_unlocked', () => {
+                // Reveal the gears
+                backdrop.classList.add('glass-revealed')
+                bgSvg.classList.remove('global-blur-active')
+
+                // Wait for the duration, then frost back over
+                clearTimeout(frostTimeout)
+
+                frostTimeout = setTimeout(() => {
+                    backdrop.classList.remove('glass-revealed')
+                    bgSvg.classList.add('global-blur-active')
+                }, REVEAL_DURATION_MS)
+            })
+        }
     },
 
     // Called every frame from uiRenderer to refresh button state

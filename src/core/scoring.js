@@ -15,9 +15,6 @@ export function addEnergy(amount) {
     State.currentEnergy = State.maxEnergy
   }
 
-  if (oldEnergy !== State.currentEnergy) {
-    console.log(`[Energy] Gained ${amount}. Updated from ${oldEnergy.toFixed(1)} to ${State.currentEnergy.toFixed(1)}/${State.maxEnergy}`);
-  }
 
   localStorage.setItem('neonStrike_currentEnergy', State.currentEnergy.toString())
   updateUI()

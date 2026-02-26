@@ -13,6 +13,7 @@ export const State = {
   // Game Status
   isGameOver: false,
   isPaused: false,
+  frostedGlassRevealed: false,
   canFire: true,
   shotCooldown: 0,
   frameCount: 0,

@@ -58,12 +58,41 @@ body {
     align-items: flex-end;
     background: #020617;
     overflow: hidden;
-    transition: background 0.2s;
 }
 
-/* Eruption Visuals - volcanic red overlay */
 #game-container.eruption {
     background: var(--coal);
+}
+
+#glass-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    /* Below canvas (which is z-index 10) but above SVG background (0) */
+    background: rgba(10, 5, 2, 0.4);
+    /* Dark semi-transparent tint */
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+
+    /* CRITICAL: Force GPU compositing to ensure the filter grabs the SVG behind it instead of treating it as an empty layer */
+    transform: translateZ(0);
+    will-change: transform, backdrop-filter;
+    transition: background 1.5s ease, backdrop-filter 1.5s ease, opacity 1.5s ease;
+    pointer-events: none;
+}
+
+/* Class applied when at least one gear is unlocked */
+#glass-backdrop.glass-revealed {
+    background: rgba(10, 5, 2, 0.0);
+    /* Drop tint */
+    backdrop-filter: blur(0px);
+    /* Remove blur */
+    -webkit-backdrop-filter: blur(0px);
+    opacity: 0;
+    /* Fade out completely */
 }
 
 #game-container.eruption canvas {

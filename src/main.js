@@ -95,6 +95,15 @@ function handleResize() {
     ec.style.top = State.canvas.offsetTop + 'px'
     ec.style.height = State.canvas.height + 'px'
   }
+
+  // Restrict frosted glass exactly to game bucket bounds
+  const bd = document.getElementById('glass-backdrop')
+  if (bd) {
+    bd.style.left = State.canvas.offsetLeft + 'px'
+    bd.style.top = State.canvas.offsetTop + 'px'
+    bd.style.width = State.canvas.width + 'px'
+    bd.style.height = State.canvas.height + 'px'
+  }
 }
 
 // Wait for DOM to be ready
