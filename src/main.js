@@ -1,5 +1,6 @@
 // Entry point. Checks FTUE flag, boots FTUE or Game
 import './visuals/styles.css'
+import './visuals/styles/chamber.css'
 import { State } from './state.js'
 import * as gameLoop from './gameLoop.js'
 import { init as initInput } from './core/inputHandler.js'

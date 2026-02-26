@@ -1,0 +1,198 @@
+/* ══════════════════════════════════════════
+   CHAMBER UI - Steampunk Machine Base ("The Rusted Engine")
+   ══════════════════════════════════════════ */
+
+.steampunk-base {
+    position: absolute;
+    /* JS sets top, left, width */
+    height: 80px;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    box-sizing: border-box;
+    /* Rusted metal background */
+    background: linear-gradient(180deg, #3d2a1d 0%, #1a1410 100%),
+        repeating-linear-gradient(45deg, rgba(0, 0, 0, 0.1) 0px, rgba(0, 0, 0, 0.1) 2px, transparent 2px, transparent 4px);
+    border-top: 4px solid #1a1410;
+    box-shadow: inset 0 8px 10px rgba(0, 0, 0, 0.7), 0 -4px 10px rgba(0, 0, 0, 0.5);
+    z-index: 15;
+    gap: 16px;
+}
+
+/* Reinforced Glass Tube Track */
+.glass-tube-track {
+    flex: 1;
+    height: 32px;
+    background: #0d0a08;
+    border: 3px solid #1a1410;
+    border-radius: 8px;
+    /* Slightly pill-shaped */
+    position: relative;
+    overflow: hidden;
+    box-shadow:
+        inset 0 4px 6px rgba(0, 0, 0, 0.8),
+        0 2px 0 rgba(255, 255, 255, 0.05);
+    /* subtle bottom highlight */
+}
+
+/* Radioactive Coolant Fill */
+.coolant-fill {
+    width: 0%;
+    height: 100%;
+    position: absolute;
+    left: 0;
+    top: 0;
+    background: linear-gradient(90deg, #10b981 0%, #06b6d4 100%);
+    box-shadow: 0 0 12px rgba(16, 185, 129, 0.6);
+    transition: width 0.15s linear;
+    z-index: 1;
+}
+
+/* Add a slow bubble/flow animation to the coolant */
+.coolant-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: repeating-linear-gradient(45deg,
+            rgba(255, 255, 255, 0.1) 0px,
+            rgba(255, 255, 255, 0.1) 10px,
+            transparent 10px,
+            transparent 20px);
+    background-size: 28px 28px;
+    animation: flowLines 1.5s linear infinite;
+    z-index: 2;
+}
+
+@keyframes flowLines {
+    0% {
+        background-position: 0 0;
+    }
+
+    100% {
+        background-position: 28px 0;
+    }
+}
+
+/* Segment Overlay [][][][] Box Effect */
+.segment-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* Creates vertical black dividers to segment the liquid */
+    background: repeating-linear-gradient(90deg,
+            transparent 0%,
+            transparent calc(5% - 4px),
+            #0d0a08 calc(5% - 4px),
+            #0d0a08 5%);
+    z-index: 3;
+    pointer-events: none;
+    box-shadow: inset 0 6px 6px rgba(0, 0, 0, 0.4);
+}
+
+/* Caution Frame for Button */
+.caution-frame {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+    background: repeating-linear-gradient(-45deg,
+            #fbbf24 0px,
+            #fbbf24 8px,
+            #1e293b 8px,
+            #1e293b 16px);
+    border-radius: 6px;
+    border: 2px solid #1a1410;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.8);
+}
+
+/* Clunky Emergency Stop Button */
+.emergency-btn {
+    position: relative;
+    width: 80px;
+    height: 48px;
+    border-radius: 4px;
+    border: 3px solid #451a03;
+    background: linear-gradient(180deg, #b91c1c 0%, #7f1d1d 100%);
+    /* Rusty Red */
+    color: #fef08a;
+    /* Yellowish text */
+    font-size: 0.75rem;
+    font-weight: 800;
+    font-family: 'Rajdhani', sans-serif;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: auto;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.1s linear, background-color 0.2s;
+    /* Massive drop shadow for depth */
+    box-shadow:
+        inset 0 4px 6px rgba(255, 255, 255, 0.15),
+        inset 0 -4px 6px rgba(0, 0, 0, 0.4),
+        0 6px 0 #451a03,
+        0 8px 12px rgba(0, 0, 0, 0.6);
+}
+
+/* Inactive State (Dull, gray-ish red) */
+.emergency-btn.gear-supply-inactive {
+    opacity: 0.7;
+    cursor: default;
+    background: linear-gradient(180deg, #7f1d1d 0%, #450a0a 100%);
+    color: #9ca3af;
+    border-color: #2e1005;
+    box-shadow:
+        inset 0 4px 6px rgba(255, 255, 255, 0.05),
+        inset 0 -4px 6px rgba(0, 0, 0, 0.6),
+        0 6px 0 #1a0802,
+        0 8px 12px rgba(0, 0, 0, 0.8);
+}
+
+/* Active State (Glows yellow, pulsing ready) */
+.emergency-btn.gear-supply-active {
+    border-color: #fbbf24;
+    box-shadow:
+        inset 0 4px 6px rgba(255, 255, 255, 0.2),
+        inset 0 -4px 6px rgba(0, 0, 0, 0.4),
+        0 6px 0 #78350f,
+        0 8px 12px rgba(0, 0, 0, 0.5),
+        0 0 15px rgba(251, 191, 36, 0.6);
+    animation: alarmPulse 1s alternate infinite;
+}
+
+@keyframes alarmPulse {
+    from {
+        filter: brightness(1);
+    }
+
+    to {
+        filter: brightness(1.3);
+    }
+}
+
+/* Active Hover */
+.emergency-btn.gear-supply-active:hover {
+    background: linear-gradient(180deg, #dc2626 0%, #991b1b 100%);
+    text-shadow: 0 0 8px rgba(254, 240, 138, 0.8);
+}
+
+/* PHYSICAL JAM DOWN EFFECT */
+.emergency-btn.gear-supply-active:active {
+    transform: translateY(6px);
+    /* Smacks down into the frame */
+    box-shadow:
+        inset 0 6px 10px rgba(0, 0, 0, 0.6),
+        0 0 0 #78350f,
+        /* Compress the 3D edge */
+        0 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.btn-label {
+    margin-top: -2px;
+    /* Visual centering adjustment */
+}

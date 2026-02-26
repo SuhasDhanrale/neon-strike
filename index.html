@@ -18,15 +18,18 @@
         <div id="gravity-overlay"></div>
         <div id="combo-display">×2</div>
 
-        <!-- Chamber UI - Machine Base Energy Panel -->
-        <div id="chamber-ui">
-            <div id="xp-bar-track">
-                <div class="energy-bar-fill" id="xp-bar"></div>
+        <!-- Chamber UI - Machine Base Energy Panel (Steampunk) -->
+        <div id="chamber-ui" class="steampunk-base">
+            <div class="glass-tube-track" id="xp-bar-track">
+                <div class="coolant-fill" id="xp-bar"></div>
+                <div class="segment-overlay"></div> <!-- Creates the [][][][] look -->
             </div>
-            <button id="supply-energy-btn" class="gear-supply-btn gear-supply-inactive"
-                title="Supply Energy to next gear">
-                <span class="gear-supply-label">⚡ SUPPLY</span>
-            </button>
+            <div class="caution-frame">
+                <button id="supply-energy-btn" class="emergency-btn gear-supply-inactive"
+                    title="Supply Energy to next gear">
+                    <span class="btn-label">⚡ RELEASE</span>
+                </button>
+            </div>
         </div>
 
         <div id="level-toast">
