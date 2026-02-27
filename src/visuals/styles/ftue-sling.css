@@ -1,0 +1,169 @@
+/*
+    FTUE Sling Animation Component
+    Isolated visuals for the drag-and-release tutorial step
+*/
+
+#ftue-sling-anim {
+    /* Absolute positioning within the game container */
+    position: absolute;
+    /* We'll center it horizontally, and base the top off the shooter position
+       via JS. For now, default to hidden. */
+    left: 50%;
+    top: 50%;
+    /* JS will override this to exactly match shooter */
+    margin-left: -25px;
+    /* Half width to center */
+    width: 50px;
+    height: 50px;
+    z-index: 90;
+    /* Right above canvas (0), below UI (200), below Shutter (100) */
+
+    font-size: 3rem;
+    pointer-events: none;
+    /* Never block canvas clicks! */
+    opacity: 0;
+
+    /* Center the emoji in the div */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.8));
+}
+
+/* Active state triggered by JS */
+#ftue-sling-anim.active {
+    opacity: 1;
+    animation: slingDragAndRelease 2.5s infinite ease-in-out;
+}
+
+#ftue-sling-line {
+    position: absolute;
+    left: 50%;
+    /* Same horizontal alignment as the hand */
+    margin-left: -2px;
+    /* Center a 4px line */
+    width: 4px;
+    height: 0;
+    /* Will be animated */
+    border-left: 4px dotted rgba(255, 255, 255, 0.7);
+    z-index: 89;
+    /* Just under the hand */
+    opacity: 0;
+    pointer-events: none;
+    transform-origin: top center;
+}
+
+#ftue-sling-line.active {
+    opacity: 1;
+    animation: slingLineDraw 2.5s infinite ease-in-out;
+}
+
+#ftue-sling-ripple {
+    position: absolute;
+    left: 50%;
+    margin-left: -20px;
+    margin-top: -20px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    z-index: 88;
+    /* Under the hand and line */
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0);
+}
+
+#ftue-sling-ripple.active {
+    animation: slingPuff 2.5s infinite ease-in-out;
+}
+
+/* 
+  The Animation:
+  0%   - Hand hovers over shooter.
+  15%  - Hand clicks down (scales down).
+  30%  - Hand holds click on shooter.
+  55%  - Hand pushes up (drag) while remaining clicked.
+  65%  - Hand holds the dragged position.
+  75%  - Hand snaps back down (release) and un-clicks (scales up).
+  100% - Hand rests at original position.
+*/
+@keyframes slingDragAndRelease {
+
+    0%,
+    15% {
+        transform: translateY(0) scale(1);
+    }
+
+    15%,
+    30% {
+        transform: translateY(0) scale(0.8);
+        /* Click down */
+    }
+
+    55%,
+    65% {
+        transform: translateY(-100px) scale(0.8);
+        /* Drag up while clicked */
+    }
+
+    75% {
+        transform: translateY(0) scale(1);
+        /* Snap back and release */
+    }
+
+    100% {
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Line draws downwards when hand drags upwards to simulate the tension */
+@keyframes slingLineDraw {
+
+    0%,
+    30% {
+        height: 0;
+        transform: translateY(0);
+    }
+
+    55%,
+    65% {
+        height: 100px;
+        /* Line stretches to 100px */
+        transform: translateY(-100px);
+        /* Moves up with the hand */
+    }
+
+    75%,
+    100% {
+        height: 0;
+        transform: translateY(0);
+    }
+}
+
+/* Puff/Ripple effect synced to the "click" moment at 15% */
+@keyframes slingPuff {
+
+    0%,
+    14% {
+        opacity: 0;
+        transform: scale(0.5);
+    }
+
+    15% {
+        opacity: 0.8;
+        transform: scale(0.5);
+    }
+
+    25% {
+        opacity: 0;
+        transform: scale(2);
+        /* Expands and fades out */
+    }
+
+    100% {
+        opacity: 0;
+        transform: scale(2);
+    }
+}

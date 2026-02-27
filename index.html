@@ -9,6 +9,8 @@
     <link rel="stylesheet" href="/src/visuals/styles/chamber.css">
     <link rel="stylesheet" href="/src/visuals/styles/requisition.css">
     <link rel="stylesheet" href="/src/visuals/styles/loading-opt1.css">
+    <link rel="stylesheet" href="/src/visuals/styles/ftue-shutter.css">
+    <link rel="stylesheet" href="/src/visuals/styles/ftue-sling.css">
 </head>
 
 <body>
@@ -164,8 +166,23 @@
         <button class="btn" onclick="resetGame()">Reboot System</button>
     </div>
 
-    <!-- FTUE Overlay -->
+    <!-- FTUE Overlay (Original, possibly unused now) -->
     <div id="ftue-overlay"></div>
+
+    <!-- NEW FTUE components (Shutter and Sling Animation) -->
+    <div id="ftue-shutter">
+        <div class="shutter-rivet tl"></div>
+        <div class="shutter-rivet tr"></div>
+        <div class="shutter-logo">PROJECT 51</div>
+        <div class="shutter-subtext">Supply energy to turn on</div>
+        <div class="shutter-rivet bl"></div>
+        <div class="shutter-rivet br"></div>
+    </div>
+
+    <!-- The Hand Animation -->
+    <div id="ftue-sling-line"></div>
+    <div id="ftue-sling-ripple"></div>
+    <div id="ftue-sling-anim">👆</div>
 
     <!-- Loading Screen Option 1 -->
     <div id="loading-opt-1">

@@ -1,0 +1,154 @@
+/* 
+  FTUE Shutter Component
+  Isolated visuals for the blast door tutorial step
+*/
+
+#ftue-shutter {
+    /* 
+      Positioned absolutely within #game-container 
+      It needs to cover the canvas, but sit BELOW the chamber-ui 
+      We'll use z-index to sandwich it properly 
+    */
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+
+    /* Z-index: 
+       Canvas is low (0). 
+       HUD (#ui-layer) is 10.
+       Chamber UI (#chamber-ui) is 15.
+       Setting to 14 means it covers the game and score, but leaves the energy button visible!
+    */
+    z-index: 14;
+
+    /* Visuals - Heavy Metal Blast Door */
+    background:
+        linear-gradient(180deg, #1f1b18 0%, #0f0c0a 100%),
+        repeating-linear-gradient(45deg,
+            rgba(0, 0, 0, 0.2),
+            rgba(0, 0, 0, 0.2) 10px,
+            transparent 10px,
+            transparent 20px);
+    border-bottom: 8px solid #ff4500;
+    box-shadow:
+        inset 0 0 50px rgba(0, 0, 0, 0.9),
+        0 10px 20px rgba(0, 0, 0, 0.8);
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    /* Text Styling */
+    font-family: 'Courier New', Courier, monospace;
+    text-align: center;
+
+    /* Animation defaults */
+    transform: translateY(-100%);
+    /* Hidden by default initially */
+    transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    /* Bouncy close */
+    pointer-events: none;
+    /* Let clicks pass through when hidden */
+}
+
+/* When active, it slides down into view */
+#ftue-shutter.active {
+    transform: translateY(0);
+    pointer-events: auto;
+    /* Block clicks to canvas when closed */
+}
+
+/* When opening, it struggles, glitches, then slides up mechanically */
+#ftue-shutter.opening {
+    animation: shutterHeavyOpen 2s forwards cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+@keyframes shutterHeavyOpen {
+    0% {
+        transform: translateY(0);
+    }
+
+    15% {
+        transform: translateY(-4%);
+    }
+
+    /* Initial struggle / tug */
+    20% {
+        transform: translateY(0%);
+    }
+
+    /* Slip back (the single glitch) */
+    100% {
+        transform: translateY(-100%);
+    }
+
+    /* Power on and slide open smoothly */
+}
+
+/* Typography elements */
+.shutter-logo {
+    font-size: 5rem;
+    font-weight: 800;
+    color: #8c8c8c;
+    /* Dull, painted gray */
+    text-transform: uppercase;
+    letter-spacing: 15px;
+    margin: 0;
+
+    /* Subtle embossed/stamped look instead of glowing or thick shadows */
+    text-shadow:
+        -1px -1px 0 rgba(0, 0, 0, 0.8),
+        1px 1px 0 rgba(255, 255, 255, 0.1);
+
+    font-family: 'Impact', 'Arial Black', sans-serif;
+}
+
+.shutter-subtext {
+    font-size: 1.2rem;
+    color: #666666;
+    /* Even darker gray for subtext */
+    margin-top: 15px;
+    letter-spacing: 8px;
+    /* Wider spacing like the screenshot */
+    text-transform: uppercase;
+    font-weight: 600;
+    text-shadow:
+        -1px -1px 0 rgba(0, 0, 0, 0.8),
+        1px 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* Industrial Rivets decoration */
+.shutter-rivet {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background: #332b25;
+    border-radius: 50%;
+    box-shadow:
+        inset 2px 2px 2px rgba(255, 255, 255, 0.2),
+        inset -2px -2px 2px rgba(0, 0, 0, 0.8),
+        1px 1px 2px rgba(0, 0, 0, 0.9);
+}
+
+.shutter-rivet.tl {
+    top: 20px;
+    left: 20px;
+}
+
+.shutter-rivet.tr {
+    top: 20px;
+    right: 20px;
+}
+
+.shutter-rivet.bl {
+    bottom: 20px;
+    left: 20px;
+}
+
+.shutter-rivet.br {
+    bottom: 20px;
+    right: 20px;
+}

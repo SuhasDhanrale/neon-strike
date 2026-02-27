@@ -14,6 +14,7 @@ import { GearBackground } from './visuals/Background/GearBackground.js'
 import { GearSystem } from './systems/GearSystem.js'
 import { SystemBot } from './ui/systemBot.js'
 import { initLoadingOption1, startLoadingSequence } from './ui/loading-opt1.js'
+import { initFtueShutter } from './ftue/ftue-shutter.js'
 
 function init() {
   // Canvas setup
@@ -50,6 +51,7 @@ function init() {
   GearSystem.init()
   SystemBot.init()
   initLoadingOption1()
+  initFtueShutter()
 
   // Start the loading sequence - game will start after it completes
   startLoadingSequence(() => {
