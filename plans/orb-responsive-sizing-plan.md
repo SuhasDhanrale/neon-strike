@@ -11,37 +11,117 @@ The existing `scale` is already responsive, but it may not dynamically adapt to 
 
 ---
 
-## Option A: Fixed Scale Factor Based on Reference Resolution (Recommended)
+## Option A: Fixed Scale Factor - Height-Based ✅ IMPLEMENTED
 
-### Approach
-Maintain a single `scale` value derived from comparing the current canvas size to a reference resolution (e.g., 1080p).
+### Goal
+Ensure orbs scale proportionally based on screen HEIGHT only. Height is the key factor because orbs fall vertically due to gravity - vertical space is the limiting factor for gameplay.
 
-### Implementation
-1. **Define reference resolution**: Use 1080p (1920×1080) as baseline
-2. **Calculate scale dynamically**: `scale = min(gameWidth / 1920, gameHeight / 1080)`
-3. **Apply uniformly**: Use existing `State.scale` throughout
+### Why Height-Only?
+1. **Vertical Gameplay**: Orbs fall and bounce - height determines how many can fit on screen
+2. **Simpler Math**: No need for `Math.min(scaleX, scaleY)`
+3. **More Predictable**: Orbs scale consistently regardless of screen width
+4. **Canvas Constraints**: Your game already constrains width (max 400px on desktop)
 
-### Pros
-- Simple to implement
-- Maintains existing codebase patterns
-- Consistent scaling across all elements
-- Easy to debug (single variable)
+### Detailed Implementation
 
-### Cons
-- Linear scaling may not be ideal for extreme aspect ratios
-- May need tuning for very small/large screens
-
-### Code Pattern
+#### Step 1: Define Reference Resolution
 ```javascript
-// In main.js or game initialization
+const REF_WIDTH = 1920   // Design for Full HD width
+const REF_HEIGHT = 1080  // Design for Full HD height
+```
+
+#### Step 2: Calculate Scale
+```javascript
 function calculateScale() {
-  const REF_WIDTH = 1920
-  const REF_HEIGHT = 1080
+  // How many times wider is current screen vs reference?
   const scaleX = State.gameWidth / REF_WIDTH
+  
+  // How many times taller is current screen vs reference?
   const scaleY = State.gameHeight / REF_HEIGHT
-  State.scale = Math.min(scaleX, scaleY) // maintain aspect ratio
+  
+  // Use the SMALLER scale to fit everything within screen bounds
+  // This prevents orbs from being cut off on extreme aspect ratios
+  State.scale = Math.min(scaleX, scaleY)
 }
 ```
+
+#### Step 3: Where to Apply Scale (Existing Code)
+The system already uses `State.scale` - we just need to calculate it dynamically:
+
+```javascript
+// In orbManager.js - orb radius calculation (ALREADY EXISTS)
+this.radius = ORB_TYPES[typeIndex].radius * State.scale  // ✓ Works!
+
+// In orbManager.js - geode radius (ALREADY EXISTS)  
+this.radius = 40 * State.scale  // ✓ Works!
+```
+
+#### Step 4: When to Recalculate
+Call `calculateScale()` at these moments:
+
+```javascript
+// 1. When game initializes
+function initGame() {
+  State.canvas.width = window.innerWidth
+  State.canvas.height = window.innerHeight
+  State.gameWidth = State.canvas.width
+  State.gameHeight = State.canvas.height
+  calculateScale()  // ← Calculate initial scale
+}
+
+// 2. When window resizes
+window.addEventListener('resize', () => {
+  State.canvas.width = window.innerWidth
+  State.canvas.height = window.innerHeight
+  State.gameWidth = State.canvas.width
+  State.gameHeight = State.canvas.height
+  calculateScale()  // ← Recalculate on resize
+})
+
+// 3. On mobile orientation change
+window.addEventListener('orientationchange', () => {
+  setTimeout(calculateScale, 100)  // ← Wait for orientation to complete
+})
+```
+
+### Enhanced Version: Add Min/Max Clamps
+Prevent extreme scaling issues:
+
+```javascript
+const MIN_SCALE = 0.4   // Orbs never smaller than 40% of design
+const MAX_SCALE = 1.5   // Orbs never larger than 150% of design
+
+function calculateScale() {
+  const scaleX = State.gameWidth / REF_WIDTH
+  const scaleY = State.gameHeight / REF_HEIGHT
+  const rawScale = Math.min(scaleX, scaleY)
+  
+  // Clamp to prevent too-small orbs on tiny screens
+  // and too-large orbs on huge screens
+  State.scale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, rawScale))
+}
+```
+
+### Visual Example
+
+| Screen Size | scaleX | scaleY | Final Scale | Orb Radius (Type 0: 40 base) |
+|-------------|--------|--------|-------------|-------------------------------|
+| 1920×1080   | 1.0    | 1.0    | 1.0         | 40 × 1.0 = 40px               |
+| 960×540     | 0.5    | 0.5    | 0.5         | 40 × 0.5 = 20px               |
+| 3840×2160   | 2.0    | 2.0    | 1.5 (clamped)| 40 × 1.5 = 60px              |
+| 375×667     | 0.195  | 0.617  | 0.195→0.4   | 40 × 0.4 = 16px (clamped min) |
+
+### Pros
+- ✅ Simple to implement (5-10 lines of code)
+- ✅ Maintains existing codebase patterns
+- ✅ Consistent scaling across ALL elements (orbs, particles, text, UI)
+- ✅ Easy to debug (single variable `State.scale`)
+- ✅ Works for any screen size without device detection
+
+### Cons
+- Linear scaling may not be ideal for extreme aspect ratios (very wide or very tall)
+- May need min/max clamps for very small/large screens
+- On extremely wide screens, game may appear small (using min of X/Y)
 
 ---
 

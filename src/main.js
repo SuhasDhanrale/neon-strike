@@ -25,6 +25,12 @@ function init() {
   handleResize()
   window.addEventListener('resize', handleResize)
 
+  // Handle orientation change on mobile devices
+  window.addEventListener('orientationchange', () => {
+    // Delay to allow orientation to complete and DOM to settle
+    setTimeout(handleResize, 100)
+  })
+
   // Wire up skill buttons to powerupManager
   initPowerups()
 
@@ -73,22 +79,64 @@ function init() {
   })
 }
 
+// ============================================
+// RESPONSIVE SCALING - Height-based only
+// Reference resolution: 1200px height (game canvas height)
+// ============================================
+const REF_HEIGHT = 650
+const MIN_SCALE = 0.5  // Prevent orbs from being too small on tiny screens
+const MAX_SCALE = 1   // Prevent orbs from being too large on huge screens
+
+/**
+ * Calculate scale factor based on screen HEIGHT only.
+ * Height is used because orbs fall vertically - it's the limiting factor.
+ * Clamps to MIN_SCALE/MAX_SCALE bounds for consistent gameplay.
+ */
+function calculateResponsiveScale() {
+  // Scale based on height only - more predictable for vertical gameplay
+  const rawScale = State.gameHeight / REF_HEIGHT
+
+  // Clamp to prevent extreme sizes
+  return Math.max(MIN_SCALE, Math.min(MAX_SCALE, rawScale))
+}
+
 function handleResize() {
   const container = document.getElementById('game-container')
   const uiOffset = 140 // reserve top space for score and progression bar
 
-  if (container.clientWidth > 600) {
+  // Use window dimensions for more reliable resize detection
+  const winWidth = window.innerWidth
+  const winHeight = window.innerHeight
+
+  if (winWidth > 600) {
     State.canvas.width = 400
-    State.canvas.height = Math.max(300, (container.clientHeight * 0.95) - uiOffset)
+    State.canvas.height = Math.max(300, (winHeight * 0.95) - uiOffset)
   } else {
-    State.canvas.width = container.clientWidth
-    State.canvas.height = Math.max(300, container.clientHeight - uiOffset)
+    State.canvas.width = winWidth
+    State.canvas.height = Math.max(300, winHeight - uiOffset)
   }
   State.canvas.style.marginTop = `${uiOffset}px`
   State.gameWidth = State.canvas.width
   State.gameHeight = State.canvas.height
   State.mainFloorY = State.gameHeight - FLOOR_OFFSET
-  State.scale = State.canvas.width / 500
+
+  // Calculate responsive scale based on reference resolution
+  State.scale = calculateResponsiveScale()
+
+  // Update all existing orb sizes on resize
+  // This ensures orbs resize when window changes
+  State.orbs.forEach(orb => {
+    if (orb.isGeode) {
+      orb.radius = 40 * State.scale
+    } else {
+      // Recalculate from base radius to ensure accuracy
+      const baseRadius = [40, 45, 50, 55, 60, 65, 75, 80, 85, 90, 95][orb.typeIndex] || 40
+      orb.radius = baseRadius * State.scale
+    }
+    // Update mass to match new radius
+    orb.mass = orb.isGeode ? orb.radius * 2 : orb.radius
+  })
+
   State.shooterPos = { x: State.canvas.width / 2, y: SPAWN_Y }
 
   // Position vertical heat bar and chamber-ui perfectly on the canvas
