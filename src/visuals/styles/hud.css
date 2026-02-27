@@ -54,6 +54,17 @@
     text-shadow: 0 0 15px #ffd700, 0 0 30px #ffd700;
 }
 
+.hud-rank {
+    color: #00f3ff;
+    font-size: 0.65rem;
+    font-weight: bold;
+    letter-spacing: 1px;
+    margin-top: 2px;
+    opacity: 0.8;
+    text-shadow: 0 0 5px rgba(0, 243, 255, 0.4);
+    font-family: 'Courier New', Courier, monospace;
+}
+
 /* ============================================
    2. HEAT BAR — Primary danger indicator
    ============================================ */

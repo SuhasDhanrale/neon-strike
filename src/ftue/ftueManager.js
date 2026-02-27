@@ -3,6 +3,7 @@ import { State } from '../state.js'
 import { EventBus } from '../eventBus.js'
 import { placeFTUEOrbs, clearFTUEOrbs } from '../core/orbManager.js'
 import { ftueOverlay } from './ftueOverlay.js'
+import { startShutterFTUE } from './ftue-shutter.js'
 
 const FTUE_KEY = 'neonStrike_ftueComplete'
 
@@ -16,8 +17,13 @@ export const ftueManager = {
 
   start() {
     State.ftueActive = true
-    placeFTUEOrbs()
-    ftueOverlay.startShooterPulse()
+
+    // Start the FTUE shutter sequence - this blocks the game until player
+    // clicks Supply Energy and the gear is unlocked
+    startShutterFTUE()
+
+    // The FTUE orbs and shooter pulse will be triggered after the shutter opens
+    // via the 'shutter:opened' event listener below
 
     // Listen for the first merge event
     // If it happens → complete FTUE with celebration
@@ -41,6 +47,13 @@ export const ftueManager = {
 
     // Store the watcher ref so complete() can clean it up
     State._ftueShotWatcher = shotWatcher
+
+    // Listen for the shutter to open - then start orbs and pulse
+    EventBus.once('shutter:opened', () => {
+      console.log('[FTUE] Shutter opened, starting orbs and pulse')
+      placeFTUEOrbs()
+      ftueOverlay.startShooterPulse()
+    })
   },
 
   complete() {

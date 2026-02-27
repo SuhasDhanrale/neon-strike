@@ -18,12 +18,13 @@ export const State = {
   shotCooldown: 0,
   frameCount: 0,
 
-  // Score / Progression
-  score: 0,
-  bestScore: parseInt(localStorage.getItem('neonDropBest') || '0'),
-  maxUnlockedOrbIndex: 0,
-  currentEnergy: 0,
-  maxEnergy: BASE_MAX_ENERGY,
+  // FTUE
+  ftueComplete: !!localStorage.getItem('neonStrike_ftueComplete'),
+  // If FTUE is not complete, default to 100 (first gear cost) so Supply button is active
+  // If FTUE is complete, try to load from localStorage
+  currentEnergy: !localStorage.getItem('neonStrike_ftueComplete')
+    ? GEAR_SYSTEM.GEAR_COSTS[0]
+    : parseInt(localStorage.getItem('neonStrike_currentEnergy') || '0'),
 
   // Gear System (persistent background)
   activeGears: new Set(),       // Set<number> of activated gear IDs (0-10)

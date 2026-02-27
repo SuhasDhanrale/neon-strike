@@ -45,20 +45,20 @@
     font-family: 'Courier New', Courier, monospace;
     text-align: center;
 
-    /* Animation defaults */
-    transform: translateY(-100%);
-    /* Hidden by default initially */
+    /* Animation defaults - By default, the shutter is DOWN (covering the screen)
+       This prevents the game from flashing before JS initializes if FTUE is active.
+       If FTUE is NOT active, JS will immediately hide it. */
+    transform: translateY(0);
     transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-    /* Bouncy close */
-    pointer-events: none;
-    /* Let clicks pass through when hidden */
+    pointer-events: auto;
+    /* Block clicks */
 }
 
-/* When active, it slides down into view */
-#ftue-shutter.active {
-    transform: translateY(0);
-    pointer-events: auto;
-    /* Block clicks to canvas when closed */
+/* When hidden/inactive, it slides up and out of view */
+#ftue-shutter.hidden {
+    transform: translateY(-100%);
+    pointer-events: none;
+    /* Let clicks pass through when hidden */
 }
 
 /* When opening, it struggles, glitches, then slides up mechanically */

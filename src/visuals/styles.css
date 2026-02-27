@@ -805,6 +805,25 @@ canvas {
     scrollbar-color: var(--ash) var(--ink-black);
 }
 
+/* Custom Neon Scrollbar for Webkit */
+.lb-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.lb-list::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 4px;
+}
+
+.lb-list::-webkit-scrollbar-thumb {
+    background: #444;
+    border-radius: 4px;
+}
+
+.lb-list::-webkit-scrollbar-thumb:hover {
+    background: var(--ember);
+}
+
 .lb-entry {
     display: flex;
     align-items: center;

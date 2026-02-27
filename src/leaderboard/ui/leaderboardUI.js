@@ -78,7 +78,7 @@ class LeaderboardUIClass {
         document.getElementById('lb-adapter-name').textContent = LeaderboardManager.adapterName;
 
         const [entries, player] = await Promise.all([
-            LeaderboardManager.fetch(10),
+            LeaderboardManager.fetch(50),
             LeaderboardManager.getPlayer()
         ]);
 

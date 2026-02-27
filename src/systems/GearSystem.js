@@ -136,9 +136,8 @@ function tryActivateGear() {
     State.activeGears.add(nextIndex)
     persist()
 
-    if (nextIndex > 0) {
-        EventBus.emit('celebration:gear_unlocked', { gearIndex: nextIndex })
-    }
+    // Emit gear unlock event for ALL gears including gear 0
+    EventBus.emit('celebration:gear_unlocked', { gearIndex: nextIndex })
 }
 
 function updateDrain() {

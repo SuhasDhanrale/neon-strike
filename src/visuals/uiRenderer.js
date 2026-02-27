@@ -6,9 +6,11 @@ import { EventBus } from '../eventBus.js'
 import { ORB_VISUALS, getOrbShape } from './theme.js'
 import { drawPolygon } from './vfxHelpers.js'
 import { GearSystem } from '../systems/GearSystem.js'
+import { LeaderboardManager } from '../leaderboard/leaderboardManager.js'
 
 // DOM element cache
 let scoreEl = null
+let rankEl = null
 let heatFillEl = null
 let energyFillEl = null
 let canvasEl = null
@@ -19,6 +21,7 @@ const pressTimers = new Map()
 
 function initElements() {
   scoreEl = document.getElementById('score')
+  rankEl = document.getElementById('hud-rank')
   heatFillEl = document.getElementById('heat-bar')
   energyFillEl = document.getElementById('xp-bar')
   canvasEl = document.getElementById('gameCanvas')
@@ -26,6 +29,9 @@ function initElements() {
 
   initProgressionBar()
   EventBus.on('unlocked:orb', handleOrbUnlock)
+
+  // Cache leaderboard for live rank projection
+  refreshLeaderboardCache()
 
   // Setup long-press detection for skill cost badges
   setupSkillLongPress()
@@ -100,6 +106,18 @@ function handleOrbUnlock({ typeIndex }) {
   }
 }
 
+// --- LIVE RANK LOGIC ---
+let lbCache = []
+let currentDisplayRank = '---'
+
+async function refreshLeaderboardCache() {
+  try {
+    lbCache = await LeaderboardManager.fetch(50)
+  } catch (err) {
+    console.warn('[HUD Rank] Failed to fetch leaderboard for projection', err)
+  }
+}
+
 export const uiRenderer = {
 
   // Called every frame OR whenever State changes
@@ -126,6 +144,31 @@ export const uiRenderer = {
       scoreEl.classList.add('combo-glow')
     } else {
       scoreEl.classList.remove('combo-glow')
+    }
+
+    // Update Live Rank
+    if (rankEl && lbCache.length > 0) {
+      let projectedRank = 1
+      for (const entry of lbCache) {
+        // If our current score beats this entry, this is our rank
+        if (State.score >= entry.score) break
+        // Otherwise, skip over them
+        projectedRank++
+      }
+
+      const newRankStr = projectedRank <= 50 ? `#${projectedRank}` : '>50'
+      if (currentDisplayRank !== newRankStr) {
+        currentDisplayRank = newRankStr
+        rankEl.textContent = `RANK: ${currentDisplayRank}`
+
+        // Optional: flash when rank increases
+        rankEl.style.color = '#fff'
+        rankEl.style.textShadow = '0 0 10px #fff'
+        setTimeout(() => {
+          rankEl.style.color = '#00f3ff'
+          rankEl.style.textShadow = '0 0 5px rgba(0, 243, 255, 0.4)'
+        }, 300)
+      }
     }
   },
 
