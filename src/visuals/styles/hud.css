@@ -228,11 +228,21 @@
 }
 
 .skill-btn {
-    width: 56px;
-    height: 56px;
-    border-radius: 12px;
-    border: 2px solid transparent;
-    background: rgba(0, 0, 0, 0.85);
+    width: 60px;
+    height: 60px;
+    border-radius: 8px;
+    /* Slightly sharper, industrial corners */
+    border: 3px solid #1a1410;
+    /* Dark, heavy casing */
+    background: linear-gradient(145deg, #2b2b2b, #1e1e1e);
+    /* Matte iron finish */
+    box-shadow:
+        inset 1px 1px 2px rgba(255, 255, 255, 0.1),
+        /* Highlight edge */
+        inset -1px -1px 3px rgba(0, 0, 0, 0.8),
+        /* Deep recess */
+        3px 4px 6px rgba(0, 0, 0, 0.6);
+    /* Heavy drop shadow */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -240,40 +250,36 @@
     cursor: pointer;
     position: relative;
     overflow: hidden;
-    transition: border-color 0.25s, box-shadow 0.25s, opacity 0.25s;
+    transition: transform 0.15s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.15s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.2s;
 }
 
-/* State: Locked */
-.skill-btn.locked {
-    border-color: #222;
-    opacity: 0.4;
-    cursor: default;
-}
+/* Base Affordability States - Clean and Elegant */
+/* No crazy glowing. Even when affordable, it looks like a sturdy heavy switch */
 
-/* State: Affordable */
-.skill-btn.affordable {
-    border-color: var(--skill-color);
-    box-shadow: 0 0 12px rgba(var(--skill-color-rgb), 0.35);
-    opacity: 1;
-    cursor: pointer;
-}
-
+/* Active (Pressed) Animation */
+.skill-btn:active,
 .skill-btn.affordable:active {
-    transform: scale(0.95);
+    transform: translateY(4px) scale(0.98);
+    /* Heavy push down */
+    box-shadow:
+        inset 2px 3px 6px rgba(0, 0, 0, 0.9),
+        /* Deep internal shadow when pressed */
+        0px 0px 0px rgba(0, 0, 0, 0);
+    /* Drop shadow flattens out */
+    border-color: #0f0a08;
+    background: linear-gradient(145deg, #1e1e1e, #2b2b2b);
+    /* Invert gradient to look pressed */
 }
 
-/* State: Unaffordable */
+/* State: Unaffordable (Slightly dimmed, but physically identical) */
 .skill-btn.unaffordable {
-    border-color: #333;
-    box-shadow: none;
-    opacity: 0.55;
-    filter: saturate(0.3);
-    cursor: default;
+    opacity: 0.6;
+    filter: saturate(0.5);
 }
 
 /* State: Cooldown */
 .skill-btn.cooldown {
-    opacity: 0.6;
+    opacity: 0.5;
 }
 
 .skill-lock-icon {
@@ -289,24 +295,26 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    opacity: 0;
-    transition: opacity 0.3s;
-}
-
-.skill-btn:not(.locked) .skill-content {
-    opacity: 1;
 }
 
 .skill-icon {
-    font-size: 1.1rem;
-    margin-bottom: 1px;
+    font-size: 1.25rem;
+    /* Slightly larger emoji */
+    margin-bottom: 2px;
+    filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.8));
+    /* Deep shadow directly on emoji */
 }
 
 .skill-label {
     font-size: 0.5rem;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    color: #fff;
+    color: #a8a8a8;
+    /* Stamped grey rather than glowing white */
+    text-shadow: -1px -1px 0 #000;
+    /* Stamped metal effect */
 }
 
 /* Cost badge — hidden by default, shown on hover/long-press */
