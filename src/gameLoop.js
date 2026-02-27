@@ -47,14 +47,11 @@ function loop(timestamp) {
   update()
   draw()
 
+  // Update UI every frame so combo/score/rank/heat are always in sync
+  uiRenderer.update()
+
   // Update gear background each frame (driven by GearSystem)
   GearBackground.update(GearSystem.getActiveGears())
-
-  // Process energy drain animation even when the game is paused
-  if (GearSystem.isDrainingEnergy()) {
-    GearSystem.tickUI()
-    uiRenderer.updateEnergyBar()
-  }
 
   requestAnimationFrame(loop)
 }

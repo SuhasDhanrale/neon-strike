@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="/src/visuals/styles/loading-opt1.css">
     <link rel="stylesheet" href="/src/visuals/styles/ftue-shutter.css">
     <link rel="stylesheet" href="/src/visuals/styles/ftue-sling.css">
+    <link rel="stylesheet" href="/src/visuals/styles/forged-dashboard.css">
 </head>
 
 <body>
@@ -67,11 +68,31 @@
                     <div class="bot-text-layer bot-subtext" id="bot-subtext">The world engine lies dormant.</div>
                 </div>
 
-                <!-- SCORE (Bottom Center) -->
-                <div class="hud-score">
-                    <div class="hud-label">SCORE</div>
-                    <div class="hud-score-value" id="score">0</div>
-                    <div class="hud-rank" id="hud-rank">RANK: ---</div>
+                <!-- NEW: FORGED DASHBOARD -->
+                <div class="forged-dashboard" id="forged-dashboard">
+                    <!-- Left Side: Score Display -->
+                    <div class="dashboard-score-section">
+                        <div class="plate-rivet tl"></div>
+                        <div class="plate-rivet tr"></div>
+                        <div class="plate-rivet bl"></div>
+                        <div class="plate-rivet br"></div>
+
+                        <div class="forged-label">SCORE</div>
+
+                        <div class="score-screen">
+                            <div class="score-digits" id="fd-score-val">0</div>
+                        </div>
+                    </div>
+
+                    <!-- Right Side: Rank Cartridge Slot -->
+                    <div class="dashboard-rank-section">
+                        <div class="forged-label">RANK</div>
+                        <div class="cartridge-slot">
+                            <div class="rank-placard iron" id="fd-rank-placard">
+                                <span class="rank-value" id="fd-rank-val">---</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 

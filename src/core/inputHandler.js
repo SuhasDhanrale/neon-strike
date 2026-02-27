@@ -19,7 +19,8 @@ function startAim(e) {
   const pos = getPos(e)
   State.aimStart = pos
   State.aimCurrent = pos
-  document.getElementById('tutorial-text').style.display = 'none'
+  const tutEl = document.getElementById('tutorial-text')
+  if (tutEl) tutEl.style.display = 'none'
 }
 
 function moveAim(e) {
@@ -31,11 +32,11 @@ function moveAim(e) {
 function endAim(e) {
   if (!State.isAiming) return
   State.isAiming = false
-  
+
   const dx = State.aimStart.x - State.aimCurrent.x
   const dy = State.aimStart.y - State.aimCurrent.y
   const dist = Math.sqrt(dx * dx + dy * dy)
-  
+
   if (dist > 20) {
     let power = Math.min(dist * 0.15, MAX_POWER)
     let angle = Math.atan2(dy, dx)
@@ -45,7 +46,7 @@ function endAim(e) {
 
 export function init(canvasElement) {
   canvas = canvasElement
-  
+
   canvas.addEventListener('mousedown', startAim)
   canvas.addEventListener('touchstart', startAim, { passive: false })
   window.addEventListener('mousemove', moveAim)

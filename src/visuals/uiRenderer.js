@@ -11,17 +11,24 @@ import { LeaderboardManager } from '../leaderboard/leaderboardManager.js'
 // DOM element cache
 let scoreEl = null
 let rankEl = null
+let placardEl = null
+let dashboardEl = null
 let heatFillEl = null
 let energyFillEl = null
 let canvasEl = null
 let progressionBarEl = null
 
+let fdCurrentScore = 0
+let fdCurrentRankClass = 'iron'
+
 // Long-press timer for mobile cost reveal
 const pressTimers = new Map()
 
 function initElements() {
-  scoreEl = document.getElementById('score')
-  rankEl = document.getElementById('hud-rank')
+  scoreEl = document.getElementById('fd-score-val')
+  rankEl = document.getElementById('fd-rank-val')
+  placardEl = document.getElementById('fd-rank-placard')
+  dashboardEl = document.getElementById('forged-dashboard')
   heatFillEl = document.getElementById('heat-bar')
   energyFillEl = document.getElementById('xp-bar')
   canvasEl = document.getElementById('gameCanvas')
@@ -136,38 +143,59 @@ export const uiRenderer = {
   },
 
   updateScore() {
-    if (!scoreEl) return
-    scoreEl.textContent = State.score
+    if (!scoreEl || !dashboardEl || !placardEl || !rankEl) return
 
-    // Gold glow on combo
-    if (State.comboCount > 1) {
-      scoreEl.classList.add('combo-glow')
-    } else {
-      scoreEl.classList.remove('combo-glow')
+    // Update Score with pop animation
+    if (State.score !== fdCurrentScore) {
+      scoreEl.textContent = State.score.toLocaleString()
+      scoreEl.classList.remove('pop')
+      void scoreEl.offsetWidth // Reflow
+      scoreEl.classList.add('pop')
+      fdCurrentScore = State.score
     }
 
+
     // Update Live Rank
-    if (rankEl && lbCache.length > 0) {
+    if (lbCache.length > 0) {
       let projectedRank = 1
       for (const entry of lbCache) {
-        // If our current score beats this entry, this is our rank
         if (State.score >= entry.score) break
-        // Otherwise, skip over them
         projectedRank++
       }
 
-      const newRankStr = projectedRank <= 50 ? `#${projectedRank}` : '>50'
-      if (currentDisplayRank !== newRankStr) {
-        currentDisplayRank = newRankStr
-        rankEl.textContent = `RANK: ${currentDisplayRank}`
+      // Determine Display Rank and Dashboard Material Tier
+      let newRankStr = '---'
+      let newTier = 'iron'
 
-        // Optional: flash when rank increases
-        rankEl.style.color = '#fff'
-        rankEl.style.textShadow = '0 0 10px #fff'
+      if (projectedRank <= 10) {
+        newRankStr = `#${projectedRank}`
+        newTier = 'gold'
+      } else if (projectedRank <= 50) {
+        newRankStr = `#${projectedRank}`
+        newTier = 'steel' // Top 50 = Silver/Steel
+      } else if (State.score > 0) {
+        newRankStr = '>50'
+        newTier = 'bronze' // Bronze threshold if they have ANY points but aren't top 50
+      }
+
+      // Drop in the new metal placard if the tier upgraded/changed
+      if (newTier !== fdCurrentRankClass) {
+        placardEl.classList.remove('slam-in');
+        placardEl.classList.add('drop-out');
+
         setTimeout(() => {
-          rankEl.style.color = '#00f3ff'
-          rankEl.style.textShadow = '0 0 5px rgba(0, 243, 255, 0.4)'
-        }, 300)
+          placardEl.classList.remove('iron', 'bronze', 'steel', 'gold');
+          placardEl.classList.add(newTier);
+          rankEl.textContent = newRankStr;
+
+          placardEl.classList.remove('drop-out');
+          placardEl.classList.add('slam-in');
+
+          fdCurrentRankClass = newTier;
+        }, 200);
+      } else {
+        // Just update text without dropping out
+        rankEl.textContent = newRankStr;
       }
     }
   },

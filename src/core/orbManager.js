@@ -235,7 +235,6 @@ export function resetGame() {
     State.skills[k].currentCost = State.skills[k].baseCost
   }
 
-  document.getElementById('score').innerText = '0'
   document.getElementById('game-over-screen').classList.remove('active')
 
   State.ammoQueue = []
