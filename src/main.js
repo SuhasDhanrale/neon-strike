@@ -114,3 +114,5 @@ if (document.readyState === 'loading') {
 } else {
   init()
 }
+
+// ─── REQUISITION POPUP (Handled in powerupManager.js) ───────────────────

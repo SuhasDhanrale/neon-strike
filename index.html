@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Neon Strike: Kinetic Merge</title>
     <meta name="description" content="Arcade physics merge game. Manage geothermal pressure and utilize tactical ammo.">
+    <link rel="stylesheet" href="/src/visuals/styles/chamber.css">
+    <link rel="stylesheet" href="/src/visuals/styles/requisition.css">
 </head>
 
 <body>
@@ -110,16 +112,59 @@
                 </div>
             </div>
         </div>
+    </div>
+    </div>
 
-        <div id="game-over-screen">
-            <h1 style="color: #ff003c; text-shadow: 0 0 20px #ff003c;">CRITICAL ERROR</h1>
-            <p>System Overloaded</p>
-            <p>Final Score: <span id="final-score">0</span></p>
-            <button class="btn" onclick="resetGame()">Reboot System</button>
+    <!-- Requisition Order Pop-up (Power-up Selection) -->
+    <div id="requisition-overlay" class="hidden">
+        <div class="requisition-clipboard">
+            <!-- Close Button -->
+            <button class="req-close-btn" onclick="closeRequisition()">[X]</button>
+
+            <!-- Metal Header Area -->
+            <div class="req-metal-top">
+                <div class="bolt top-left"></div>
+                <div class="bolt top-right"></div>
+                <div class="req-clip"></div>
+            </div>
+
+            <!-- The Paper/Content Area -->
+            <div class="req-paper">
+                <h2 id="req-title" class="req-stencil-font">REQUISITION: ENABLED</h2>
+                <p class="req-desc">Insufficient authorization. Select override method:</p>
+
+                <div class="req-actions">
+                    <!-- Energy Override -->
+                    <button class="req-btn energy-btn" onclick="confirmRequisition('energy')">
+                        <span class="icon">⚡</span>
+                        <span class="text">OVERRIDE<br><small>(Cost: <span id="req-cost">0</span> Energy)</small></span>
+                    </button>
+
+                    <!-- Watch Ad -->
+                    <button class="req-btn ad-btn" onclick="confirmRequisition('ad')">
+                        <span class="icon">📺</span>
+                        <span class="text">CALL SUPPORT<br><small>(Watch Ad)</small></span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Metal Bottom Area -->
+            <div class="req-metal-bottom">
+                <div class="bolt bottom-left"></div>
+                <div class="bolt bottom-right"></div>
+            </div>
         </div>
+    </div>
 
-        <!-- FTUE Overlay -->
-        <div id="ftue-overlay"></div>
+    <div id="game-over-screen">
+        <h1 style="color: #ff003c; text-shadow: 0 0 20px #ff003c;">CRITICAL ERROR</h1>
+        <p>System Overloaded</p>
+        <p>Final Score: <span id="final-score">0</span></p>
+        <button class="btn" onclick="resetGame()">Reboot System</button>
+    </div>
+
+    <!-- FTUE Overlay -->
+    <div id="ftue-overlay"></div>
     </div>
 
     <script type="module" src="/src/main.js"></script>

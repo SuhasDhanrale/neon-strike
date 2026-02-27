@@ -7,7 +7,7 @@
  *   await AdManager.showInterstitialAfterLevel(levelNumber);
  */
 
-import { EventBus } from '../src/core/EventBus.js';
+import { EventBus } from '../src/eventBus.js';
 import {
     AD_CONFIG,
     getPlacementId,
