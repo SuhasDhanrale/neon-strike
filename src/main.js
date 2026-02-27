@@ -13,6 +13,7 @@ import { LeaderboardUI } from './leaderboard/ui/leaderboardUI.js'
 import { GearBackground } from './visuals/Background/GearBackground.js'
 import { GearSystem } from './systems/GearSystem.js'
 import { SystemBot } from './ui/systemBot.js'
+import { initLoadingOption1 } from './ui/loading-opt1.js'
 
 function init() {
   // Canvas setup
@@ -48,6 +49,7 @@ function init() {
   GearBackground.init()
   GearSystem.init()
   SystemBot.init()
+  initLoadingOption1()
 
   // Check FTUE
   if (ftueManager.shouldRun()) {

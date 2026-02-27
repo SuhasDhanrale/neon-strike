@@ -1,0 +1,256 @@
+/* 
+  Loading Screen Option 1: The Pressure Valve 
+  Rustic Machine / Old Age / Heavy Metal Vault Theme 
+*/
+
+#loading-opt-1 {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: radial-gradient(circle at center, #2c2520 0%, #0a0807 100%);
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Courier New', Courier, monospace;
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease-in-out;
+}
+
+#loading-opt-1.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+/* Grungy Background Overlay */
+#loading-opt-1::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image:
+        radial-gradient(transparent 30%, rgba(0, 0, 0, 0.8) 100%),
+        repeating-linear-gradient(0deg,
+            rgba(0, 0, 0, 0.1),
+            rgba(0, 0, 0, 0.1) 2px,
+            transparent 2px,
+            transparent 4px);
+    pointer-events: none;
+    z-index: 1;
+}
+
+.valve-container {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    z-index: 2;
+    margin-bottom: 40px;
+}
+
+/* The spinning valve wheel */
+.valve-wheel {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 15px solid #5a4b3d;
+    /* Rusted iron */
+    box-shadow:
+        inset 0 0 20px rgba(0, 0, 0, 0.8),
+        0 0 20px rgba(0, 0, 0, 0.9),
+        0 0 0 5px #2c231a;
+    position: relative;
+    background: radial-gradient(circle at center, #1a1510 20%, transparent 21%);
+    animation: spinValve 4s linear infinite;
+}
+
+/* Valve spokes */
+.valve-wheel::before,
+.valve-wheel::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: -20px;
+    width: calc(100% + 40px);
+    height: 20px;
+    background: #5a4b3d;
+    transform-origin: center;
+    box-shadow:
+        inset 0 4px 4px rgba(255, 255, 255, 0.1),
+        inset 0 -4px 4px rgba(0, 0, 0, 0.5);
+    margin-top: -10px;
+    /* offset half height */
+}
+
+.valve-wheel::after {
+    transform: rotate(90deg);
+}
+
+.valve-spoke-cross {
+    position: absolute;
+    top: 50%;
+    left: -20px;
+    width: calc(100% + 40px);
+    height: 20px;
+    background: #5a4b3d;
+    transform-origin: center;
+    transform: rotate(45deg);
+    box-shadow:
+        inset 0 4px 4px rgba(255, 255, 255, 0.1),
+        inset 0 -4px 4px rgba(0, 0, 0, 0.5);
+    margin-top: -10px;
+}
+
+.valve-spoke-cross-2 {
+    position: absolute;
+    top: 50%;
+    left: -20px;
+    width: calc(100% + 40px);
+    height: 20px;
+    background: #5a4b3d;
+    transform-origin: center;
+    transform: rotate(-45deg);
+    box-shadow:
+        inset 0 4px 4px rgba(255, 255, 255, 0.1),
+        inset 0 -4px 4px rgba(0, 0, 0, 0.5);
+    margin-top: -10px;
+}
+
+/* Center nut */
+.valve-nut {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 40px;
+    height: 40px;
+    background: #7a3a10;
+    /* Rust accent */
+    border-radius: 5px;
+    transform: translate(-50%, -50%);
+    box-shadow:
+        inset 0px 2px 2px rgba(255, 255, 255, 0.2),
+        0px 0px 10px rgba(0, 0, 0, 0.8);
+    border: 2px solid #5a4b3d;
+}
+
+@keyframes spinValve {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Pressure Gauge */
+.pressure-gauge-container {
+    width: 300px;
+    height: 40px;
+    background: #0f0c0a;
+    border: 4px solid #3c3026;
+    border-radius: 20px;
+    position: relative;
+    z-index: 2;
+    box-shadow:
+        inset 0 0 10px #000,
+        0 5px 15px rgba(0, 0, 0, 0.8);
+    overflow: hidden;
+}
+
+/* Bolts on gauge */
+.gauge-bolt {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background: #1a1510;
+    border-radius: 50%;
+    top: 11px;
+}
+
+.gauge-bolt.left {
+    left: 10px;
+}
+
+.gauge-bolt.right {
+    right: 10px;
+}
+
+.pressure-gauge-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #ff4500, #ff8c00);
+    box-shadow: 0 0 15px #ff4500, 0 0 30px #ff8c00;
+    border-radius: 15px;
+    transition: width 0.1s linear;
+    position: relative;
+}
+
+/* Steam particle effect overlaid on the bar */
+.pressure-gauge-fill::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: linear-gradient(45deg,
+            rgba(255, 255, 255, 0.15) 25%,
+            transparent 25%,
+            transparent 50%,
+            rgba(255, 255, 255, 0.15) 50%,
+            rgba(255, 255, 255, 0.15) 75%,
+            transparent 75%,
+            transparent);
+    background-size: 20px 20px;
+    animation: barSteamMove 1s linear infinite;
+}
+
+@keyframes barSteamMove {
+    0% {
+        background-position: 0 0;
+    }
+
+    100% {
+        background-position: 20px 20px;
+    }
+}
+
+/* Text Styling */
+.loading-text {
+    color: #ff8c00;
+    font-size: 1.2rem;
+    font-weight: bold;
+    letter-spacing: 4px;
+    margin-top: 20px;
+    z-index: 2;
+    text-shadow: 0 0 10px #ff4500;
+    animation: pulseText 2s ease-in-out infinite;
+}
+
+@keyframes pulseText {
+
+    0%,
+    100% {
+        opacity: 0.5;
+    }
+
+    50% {
+        opacity: 1;
+        text-shadow: 0 0 20px #ff4500, 0 0 40px #ff8c00;
+    }
+}
+
+.pressure-readout {
+    color: #a09080;
+    font-size: 0.8rem;
+    margin-top: 10px;
+    z-index: 2;
+    font-family: monospace;
+}

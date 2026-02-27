@@ -8,6 +8,7 @@
     <meta name="description" content="Arcade physics merge game. Manage geothermal pressure and utilize tactical ammo.">
     <link rel="stylesheet" href="/src/visuals/styles/chamber.css">
     <link rel="stylesheet" href="/src/visuals/styles/requisition.css">
+    <link rel="stylesheet" href="/src/visuals/styles/loading-opt1.css">
 </head>
 
 <body>
@@ -165,6 +166,23 @@
 
     <!-- FTUE Overlay -->
     <div id="ftue-overlay"></div>
+
+    <!-- Loading Screen Option 1 -->
+    <div id="loading-opt-1">
+        <div class="valve-container">
+            <div class="valve-wheel">
+                <div class="valve-spoke-cross"></div>
+                <div class="valve-spoke-cross-2"></div>
+                <div class="valve-nut"></div>
+            </div>
+        </div>
+        <div class="pressure-gauge-container">
+            <div class="gauge-bolt left"></div>
+            <div class="gauge-bolt right"></div>
+            <div class="pressure-gauge-fill"></div>
+        </div>
+        <div class="loading-text">PRESSURIZING ENGINES...</div>
+        <div class="pressure-readout">PRESSURE: 0 PSI</div>
     </div>
 
     <script type="module" src="/src/main.js"></script>
