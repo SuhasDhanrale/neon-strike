@@ -13,7 +13,7 @@ import { LeaderboardUI } from './leaderboard/ui/leaderboardUI.js'
 import { GearBackground } from './visuals/Background/GearBackground.js'
 import { GearSystem } from './systems/GearSystem.js'
 import { SystemBot } from './ui/systemBot.js'
-import { initLoadingOption1 } from './ui/loading-opt1.js'
+import { initLoadingOption1, startLoadingSequence } from './ui/loading-opt1.js'
 
 function init() {
   // Canvas setup
@@ -51,21 +51,24 @@ function init() {
   SystemBot.init()
   initLoadingOption1()
 
-  // Check FTUE
-  if (ftueManager.shouldRun()) {
-    // Start FTUE mode:
-    // - resetGame() runs normally (sets up ammo queue, geodes, chamber batch)
-    // - THEN placeFTUEOrbs() adds the two demo orbs on top
-    // - THEN shooter pulse starts
-    // The game loop is already running. Nothing is paused.
-    resetGame()
-    ftueManager.start()
-  } else {
-    resetGame()
-  }
+  // Start the loading sequence - game will start after it completes
+  startLoadingSequence(() => {
+    // Check FTUE
+    if (ftueManager.shouldRun()) {
+      // Start FTUE mode:
+      // - resetGame() runs normally (sets up ammo queue, geodes, chamber batch)
+      // - THEN placeFTUEOrbs() adds the two demo orbs on top
+      // - THEN shooter pulse starts
+      // The game loop is already running. Nothing is paused.
+      resetGame()
+      ftueManager.start()
+    } else {
+      resetGame()
+    }
 
-  // Start loop
-  gameLoop.start()
+    // Start loop
+    gameLoop.start()
+  })
 }
 
 function handleResize() {
