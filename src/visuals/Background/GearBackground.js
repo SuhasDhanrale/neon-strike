@@ -604,7 +604,7 @@ export const GearBackground = {
                         clearTimeout(_glitchTimer);
                         _glitchTimer = setTimeout(() => { _isGlitching = false; applyVisualState(activeGears); }, 150);
                     }
-                }, 1500);
+                }, 10500);
             }
 
             _isOverdrive = isOverdriveNow;

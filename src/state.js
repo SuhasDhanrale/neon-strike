@@ -51,6 +51,10 @@ export const State = {
   comboCount: 0,
   comboTimer: 0,
 
+  // Progression Bar — highest orb index ever seen in-game (0-based)
+  // Starts at 3 (= orb value 16) so the bar renders correctly before any merge
+  maxUnlockedOrbIndex: 3,
+
   // VFX
   screenShake: 0,
   shakeCooldown: 0,   // frames of death-line immunity after Shake power-up
