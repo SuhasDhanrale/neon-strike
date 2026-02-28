@@ -7,7 +7,6 @@ export default {
   name: 'Smash',
   mult: 1.25,
   shakeAmount: 30,
-  heatCost: 30,
 
   execute(State) {
     State.orbs.forEach(orb => {

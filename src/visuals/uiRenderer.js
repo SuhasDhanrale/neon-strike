@@ -13,7 +13,6 @@ let scoreEl = null
 let rankEl = null
 let placardEl = null
 let dashboardEl = null
-let heatFillEl = null
 let energyFillEl = null
 let canvasEl = null
 let progressionBarEl = null
@@ -29,7 +28,6 @@ function initElements() {
   rankEl = document.getElementById('fd-rank-val')
   placardEl = document.getElementById('fd-rank-placard')
   dashboardEl = document.getElementById('forged-dashboard')
-  heatFillEl = document.getElementById('heat-bar')
   energyFillEl = document.getElementById('xp-bar')
   canvasEl = document.getElementById('gameCanvas')
   progressionBarEl = document.getElementById('progression-bar')
@@ -133,7 +131,6 @@ export const uiRenderer = {
     if (!scoreEl) initElements()
 
     this.updateScore()
-    this.updateHeatBar()
     this.updateEnergyBar()
     this.updateSkills()
     this.updateProgressionBar()
@@ -196,29 +193,6 @@ export const uiRenderer = {
       } else {
         // Just update text without dropping out
         rankEl.textContent = newRankStr;
-      }
-    }
-  },
-
-  updateHeatBar() {
-    if (!heatFillEl) return
-
-    const pct = State.systemHeat // already 0-100
-    heatFillEl.style.height = pct + '%'
-
-    // Class-based pulse state
-    heatFillEl.classList.remove('heat-calm', 'heat-warning', 'heat-critical', 'heat-erupting')
-    if (pct >= 80) heatFillEl.classList.add('heat-critical')
-    else if (pct >= 40) heatFillEl.classList.add('heat-warning')
-    else heatFillEl.classList.add('heat-calm')
-
-    // Bleed heat color onto canvas edge
-    if (canvasEl) {
-      if (pct > 80) {
-        const intensity = ((pct - 80) / 20).toFixed(2)
-        canvasEl.style.boxShadow = `0 0 60px rgba(255, 0, 60, ${intensity * 0.6})`
-      } else {
-        canvasEl.style.boxShadow = '0 0 50px rgba(0, 243, 255, 0.1)'
       }
     }
   },

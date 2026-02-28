@@ -30,9 +30,6 @@ export const State = {
   activeGears: new Set(),       // Set<number> of activated gear IDs (0-10)
   gearEnergyTarget: GEAR_SYSTEM.GEAR_COSTS[0], // Energy cost of the next gear to unlock
 
-  // Heat
-  systemHeat: 0,
-
   // Aim
   isAiming: false,
   aimStart: { x: 0, y: 0 },
@@ -56,6 +53,7 @@ export const State = {
 
   // VFX
   screenShake: 0,
+  shakeCooldown: 0,   // frames of death-line immunity after Shake power-up
 
   // FTUE
   ftueActive: false,

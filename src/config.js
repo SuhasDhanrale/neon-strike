@@ -9,21 +9,10 @@ export const GEODE_SPAWN_CHANCE = 0.04
 export const SHOT_COOLDOWN_MS = 500
 export const SHOT_COOLDOWN_FRAMES = 30
 export const CHAMBER_BATCH_SIZE = 5
-export const ERUPTION_HEAT_THRESHOLD = 100
 export const SUBSTEPPING_ITERATIONS = 4
 export const DANGER_LINE_Y = 70
-export const GAME_OVER_SETTLE_SPEED = 0.12
-export const GAME_OVER_SETTLE_FRAMES = 24
-
-export const HEAT_THRESHOLDS = {
-  // 15+ active orbs builds pressure, <10 cools down
-  CRITICAL_COUNT: 22,
-  CRITICAL_HEAT: 15,
-  HOT_COUNT: 15,
-  HOT_HEAT: 8,
-  COOL_COUNT: 10,
-  COOL_REDUCTION: 5
-}
+export const DANGER_LINE_DEATH_COUNT = 3   // orbs touching death line to end game
+export const SHAKE_COOLDOWN_FRAMES = 180   // ~3 sec immunity after Shake power-up
 
 export const BASE_MAX_ENERGY = 100
 
@@ -47,9 +36,9 @@ export const AMMO_TYPES = {
 }
 
 export const SKILLS_CONFIG = {
-  1: { id: 1, name: 'Shake', icon: '⚡', label: 'SHAKE', baseCost: 15, mult: 1.3, heatCost: 30 },
-  2: { id: 2, name: 'Smash', icon: '🔨', label: 'SMASH', baseCost: 40, mult: 1.25, heatCost: 30 },
-  3: { id: 3, name: 'Void', icon: '🌀', label: 'VOID', baseCost: 80, mult: 1.4, heatCost: 30 }
+  1: { id: 1, name: 'Shake', icon: '⚡', label: 'SHAKE', baseCost: 15, mult: 1.3 },
+  2: { id: 2, name: 'Smash', icon: '🔨', label: 'SMASH', baseCost: 40, mult: 1.25 },
+  3: { id: 3, name: 'Void', icon: '🌀', label: 'VOID', baseCost: 80, mult: 1.4 }
 }
 
 // ============================================

@@ -139,18 +139,12 @@ function handleResize() {
 
   State.shooterPos = { x: State.canvas.width / 2, y: SPAWN_Y }
 
-  // Position vertical heat bar and chamber-ui perfectly on the canvas
-  const hc = document.getElementById('vertical-heat-container')
+  // Position chamber-ui perfectly on the canvas
   const chamberUI = document.getElementById('chamber-ui')
   if (chamberUI) {
     chamberUI.style.left = State.canvas.offsetLeft + 'px'
     chamberUI.style.width = State.canvas.width + 'px'
     chamberUI.style.top = (State.canvas.offsetTop + State.mainFloorY) + 'px'
-  }
-  if (hc) {
-    hc.style.left = State.canvas.offsetLeft + 'px'
-    hc.style.top = State.canvas.offsetTop + 'px'
-    hc.style.height = State.canvas.height + 'px'
   }
 
   // Restrict frosted glass exactly to game bucket bounds

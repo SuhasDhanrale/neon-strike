@@ -6,7 +6,7 @@ import { draw as drawChamber } from './chamberRenderer.js'
 import { drawAll as drawOrbs, drawTrails } from './orbRenderer.js'
 import { draw as drawShooter } from './shooterRenderer.js'
 import { drawParticles, drawFloatingTexts } from './particleSystem.js'
-import { applyScreenShake, drawMergeFlashes, drawHeatShimmer } from './vfxHelpers.js'
+import { applyScreenShake, drawMergeFlashes } from './vfxHelpers.js'
 import { drawBackground } from './backgroundRenderer.js'
 
 export function draw() {
@@ -29,10 +29,7 @@ export function draw() {
   // 2. Chamber strip (behind orbs)
   drawChamber(ctx)
 
-  // 3. Heat shimmer (above chamber, below orbs)
-  drawHeatShimmer(ctx)
-
-  // 4. Orb trails (behind orbs) — disabled for volcanic aesthetic
+  // 3. Orb trails (behind orbs) — disabled for volcanic aesthetic
   // drawTrails(ctx) // Commented out - no trails in volcanic style
 
   // 5. Orbs

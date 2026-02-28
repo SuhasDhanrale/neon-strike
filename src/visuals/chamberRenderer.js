@@ -5,9 +5,8 @@ import { State } from '../state.js'
 import { THEME, lerpColor } from './theme.js'
 
 export function draw(ctx) {
-  const { canvas, mainFloorY, systemHeat } = State
+  const { canvas, mainFloorY } = State
   const chamberH = canvas.height - mainFloorY
-  const heat = systemHeat / 100
 
   // ============================================
   // 1. MACHINE BASE PANEL - Thick dark panel with bolts/rivets
@@ -95,9 +94,8 @@ export function draw(ctx) {
   ctx.lineTo(canvas.width, mainFloorY + 2)
   ctx.stroke()
 
-  // Color line - lerps from ash to lava as heat rises
-  const lineColor = lerpColor('#4a4040', '#c93010', heat)
-  ctx.strokeStyle = lineColor
+  // Color line - fixed neutral color
+  ctx.strokeStyle = '#4a4040'
   ctx.lineWidth = THEME.chamber.lineWidth
   ctx.setLineDash(THEME.chamber.dashPattern)
   ctx.beginPath()
@@ -110,7 +108,7 @@ export function draw(ctx) {
   // 4. CHAMBER LABEL - stencil style
   // ============================================
   ctx.save()
-  ctx.globalAlpha = 0.2 + heat * 0.3
+  ctx.globalAlpha = 0.2
   ctx.fillStyle = '#6b5e58'
   ctx.font = THEME.chamber.labelFont
   ctx.textAlign = 'center'

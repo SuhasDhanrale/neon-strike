@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="/src/visuals/styles/ftue-shutter.css">
     <link rel="stylesheet" href="/src/visuals/styles/ftue-sling.css">
     <link rel="stylesheet" href="/src/visuals/styles/forged-dashboard.css">
+    <link rel="stylesheet" href="/src/visuals/styles/death-screen.css">
 </head>
 
 <body>
@@ -46,11 +47,6 @@
         <div id="ui-layer">
             <!-- Leaderboard Toggle Button -->
             <button id="lb-toggle-btn" title="Scoreboard">T</button>
-
-            <!-- Vertical Heat Bar (Left Side) -->
-            <div id="vertical-heat-container" class="vertical-bar-container left">
-                <div class="heat-bar-fill heat-calm" id="heat-bar"></div>
-            </div>
 
             <!-- NEW HUD LAYOUT -->
             <div class="hud-container">
@@ -96,7 +92,7 @@
                 </div>
             </div>
 
-            <div class="tutorial" id="tutorial-text">Keep Orb Volume Down • High Heat = Energy Leak</div>
+            <div class="tutorial" id="tutorial-text">Keep Orb Volume Down</div>
 
             <!-- SKILLS BAR -->
             <div class="skills-bar">
@@ -183,6 +179,56 @@
         <p>System Overloaded</p>
         <p>Final Score: <span id="final-score">0</span></p>
         <button class="btn" onclick="resetGame()">Reboot System</button>
+    </div>
+
+    <!-- New Death Screen (Preview via Console: document.getElementById('death-screen').classList.toggle('active')) -->
+    <div id="death-screen">
+        <div class="ds-forged-panel">
+            <div class="ds-rivet ds-r-tl"></div>
+            <div class="ds-rivet ds-r-tr"></div>
+            <div class="ds-rivet ds-r-bl"></div>
+            <div class="ds-rivet ds-r-br"></div>
+
+            <h1 class="ds-header-title">REVIVAL FAILED</h1>
+            <div class="ds-sub-title">CRITICAL FAILURE</div>
+
+            <div class="ds-score-row">
+                <div class="ds-score-box">
+                    <div class="ds-lbl">SCORE</div>
+                    <div class="ds-val" id="ds-score-val">0</div>
+                </div>
+                <div class="ds-score-box">
+                    <div class="ds-lbl">BEST</div>
+                    <div class="ds-val secondary" id="ds-best-val">0</div>
+                </div>
+            </div>
+
+
+            <div class="ds-revival-circ-wrapper">
+                <div class="ds-gauge-ring">
+                    <div class="ds-gauge-inner">10%</div>
+                </div>
+                <div class="ds-gauge-text">
+                    <div class="title">SYSTEM STATUS</div>
+                    <div class="desc">OFFLINE...</div>
+                </div>
+            </div>
+
+            <div class="ds-rank-box">
+                <div class="ds-lbl">RANK</div>
+                <div class="ds-rank-val" id="ds-rank-val">---</div>
+            </div>
+
+            <div class="ds-sys-bot-msg">
+                CRITICAL ERROR: MAXIMUM ALLOWED ORBS (2) CROSSED THE RED LINE. SYSTEM COMPROMISED. REBOOT REQUIRED.
+            </div>
+
+            <div class="ds-btn-row">
+                <button class="ds-f-btn primary">
+                    <span class="ds-btn-icon">↺</span> RESTART
+                </button>
+            </div>
+        </div>
     </div>
 
     <!-- FTUE Overlay (Original, possibly unused now) -->

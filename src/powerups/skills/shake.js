@@ -1,13 +1,13 @@
 // SHAKE skill module
 import { createFloatingText } from '../../visuals/particleSystem.js'
 import { THEME } from '../../visuals/theme.js'
+import { SHAKE_COOLDOWN_FRAMES } from '../../config.js'
 
 export default {
   id: 1,
   name: 'Shake',
   mult: 1.3,
   shakeAmount: 15,
-  heatCost: 30,
 
   execute(State) {
     State.orbs.forEach(orb => {
@@ -16,6 +16,10 @@ export default {
         orb.vx += (Math.random() - 0.5) * 20
       }
     })
+
+    // Grant immunity from death-line check while orbs settle after the shake
+    State.shakeCooldown = SHAKE_COOLDOWN_FRAMES
+
     createFloatingText(
       State.canvas.width / 2,
       State.canvas.height / 2,

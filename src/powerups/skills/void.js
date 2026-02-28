@@ -7,7 +7,6 @@ export default {
   name: 'Void',
   mult: 1.4,
   shakeAmount: 40,
-  heatCost: 30,
 
   execute(State) {
     const threshold = State.gameHeight * 0.4

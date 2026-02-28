@@ -1,6 +1,5 @@
 // Registry. useSkill(id). Checks cost, deducts energy, calls execute()
 import { State } from '../state.js'
-import { addHeat } from '../core/heatSystem.js'
 import { updateUI } from '../visuals/uiRenderer.js'
 import { createFloatingText } from '../visuals/particleSystem.js'
 import { THEME } from '../visuals/theme.js'
@@ -72,12 +71,6 @@ export function confirmRequisition(method) {
     State.currentEnergy -= runtimeSkill.currentCost
     localStorage.setItem('neonStrike_currentEnergy', State.currentEnergy.toString())
     runtimeSkill.currentCost = Math.ceil(runtimeSkill.currentCost * skill.mult)
-
-    // Add heat (obeys eruption grace lock)
-    const heatApplied = addHeat(skill.heatCost)
-    if (heatApplied) {
-      createFloatingText(State.shooterPos.x + 50, State.shooterPos.y, `+${skill.heatCost} HEAT`, THEME.floatingTextColors.heat, 28)
-    }
 
     _executeSkill(skill)
     closeRequisition()

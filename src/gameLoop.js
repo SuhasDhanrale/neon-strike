@@ -6,6 +6,7 @@ import { updateScreenShake } from './visuals/vfxHelpers.js'
 import { updateComboTimer } from './core/scoring.js'
 import { draw } from './visuals/renderer.js'
 import { SUBSTEPPING_ITERATIONS } from './config.js'
+import { checkDangerLine } from './core/orbManager.js'
 import { GearBackground } from './visuals/Background/GearBackground.js'
 import { GearSystem } from './systems/GearSystem.js'
 import { uiRenderer } from './visuals/uiRenderer.js'
@@ -21,6 +22,9 @@ function update() {
     State.orbs.forEach(orb => orb.update())
     resolveCollisions()
   }
+
+  // Global death-line check (ends game if ≥3 orbs touch the line)
+  checkDangerLine()
 
   // Remove deleted orbs
   State.orbs = State.orbs.filter(orb => !orb.markedForDeletion)

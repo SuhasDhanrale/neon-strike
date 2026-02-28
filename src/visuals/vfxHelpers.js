@@ -82,43 +82,11 @@ export function updateScreenShake() {
   }
 }
 
-// ============================================
-// CHAMBER HEAT SHIMMER (optional, minimal)
-// ============================================
-
-export function drawHeatShimmer(ctx) {
-  const heat = State.systemHeat / 100
-  if (heat < 0.5) return
-
-  // Subtle wavy lines above chamber when hot
-  ctx.save()
-  ctx.globalAlpha = (heat - 0.5) * 0.3
-  ctx.strokeStyle = '#e85d20'
-  ctx.lineWidth = 1
-
-  const time = Date.now() * 0.003
-  const y = State.mainFloorY - 10
-
-  ctx.beginPath()
-  for (let x = 0; x < State.canvas.width; x += 4) {
-    const offsetY = Math.sin(x * 0.02 + time) * 3
-    if (x === 0) {
-      ctx.moveTo(x, y + offsetY)
-    } else {
-      ctx.lineTo(x, y + offsetY)
-    }
-  }
-  ctx.stroke()
-
-  ctx.restore()
-}
-
 export default {
   triggerMergeFlash,
   drawMergeFlashes,
   applyScreenShake,
   updateScreenShake,
-  drawHeatShimmer,
   drawPolygon
 }
 

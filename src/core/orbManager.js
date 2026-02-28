@@ -3,10 +3,9 @@ import { State } from '../state.js'
 import { EventBus } from '../eventBus.js'
 import {
   ORB_TYPES, AMMO_TYPES, GEODE_SPAWN_CHANCE, SHOT_COOLDOWN_MS,
-  SHOT_COOLDOWN_FRAMES, FRICTION, NORMAL_GRAVITY,
-  HEAT_THRESHOLDS, DANGER_LINE_Y, GAME_OVER_SETTLE_SPEED, GAME_OVER_SETTLE_FRAMES
+  SHOT_COOLDOWN_FRAMES, FRICTION, NORMAL_GRAVITY, DANGER_LINE_Y,
+  DANGER_LINE_DEATH_COUNT
 } from '../config.js'
-import { addHeat } from './heatSystem.js'
 import { updateUI } from '../visuals/uiRenderer.js'
 import { LeaderboardManager } from '../leaderboard/leaderboardManager.js'
 import { LeaderboardUI } from '../leaderboard/ui/leaderboardUI.js'
@@ -25,7 +24,6 @@ export class Orb {
     this.ammoType = ammoConfig.id
     this.ghostTimer = 0
     this.hasCollided = false
-    this.dangerRestFrames = 0
 
     if (isGeode) {
       this.radius = 40 * State.scale
@@ -87,22 +85,6 @@ export class Orb {
       this.vy *= -0.5
     }
 
-    // Game Over Logic: orb must be settled above danger line for sustained frames.
-    const isNearRest =
-      Math.abs(this.vx) < GAME_OVER_SETTLE_SPEED &&
-      Math.abs(this.vy) < GAME_OVER_SETTLE_SPEED
-    const isAboveDangerLine = this.y + this.radius < DANGER_LINE_Y
-
-    if (isNearRest && isAboveDangerLine && !State.isAiming && this.hasCollided) {
-      this.dangerRestFrames++
-      if (this.dangerRestFrames >= GAME_OVER_SETTLE_FRAMES) {
-        if (State.orbs.filter(o => !o.inChamber).length > 5 && State.shotCooldown <= 0) {
-          endGame()
-        }
-      }
-    } else {
-      this.dangerRestFrames = 0
-    }
   }
 
   getDrawData() {
@@ -177,22 +159,29 @@ export function spawnOrb(angle, power) {
   State.canFire = false
   State.shotCooldown = SHOT_COOLDOWN_FRAMES
 
-  // Geothermal Heat Mechanic
-  // Calculate Population Density (ignore Geodes and Chamber orbs)
-  let activeCount = State.orbs.filter(o => !o.isGeode && !o.inChamber).length
-
-  if (activeCount >= HEAT_THRESHOLDS.CRITICAL_COUNT) {
-    addHeat(HEAT_THRESHOLDS.CRITICAL_HEAT)
-  } else if (activeCount >= HEAT_THRESHOLDS.HOT_COUNT) {
-    addHeat(HEAT_THRESHOLDS.HOT_HEAT)
-  } else if (activeCount < HEAT_THRESHOLDS.COOL_COUNT) {
-    addHeat(-HEAT_THRESHOLDS.COOL_REDUCTION)
-  }
-
   updateUI()
   EventBus.emit('orb:spawned', orb)
 
   setTimeout(() => { State.canFire = true }, SHOT_COOLDOWN_MS)
+}
+
+// ─── DANGER LINE CHECK (called once per frame from gameLoop) ─────────────────
+export function checkDangerLine() {
+  if (State.isGameOver || State.isPaused) return
+
+  // Shake cooldown: don't kill the player right after a shake power-up
+  if (State.shakeCooldown > 0) {
+    State.shakeCooldown--
+    return
+  }
+
+  const orbsTouchingLine = State.orbs.filter(
+    o => !o.inChamber && (o.y - o.radius) <= DANGER_LINE_Y
+  ).length
+
+  if (orbsTouchingLine >= DANGER_LINE_DEATH_COUNT) {
+    endGame()
+  }
 }
 
 async function endGame() {
@@ -207,7 +196,6 @@ async function endGame() {
 
   // Submit score to leaderboard (fire and forget)
   LeaderboardManager.submit(State.score, {
-    heat: State.systemHeat
   }).catch(err => {
     console.warn('[Leaderboard] Submit failed:', err)
   })
@@ -223,12 +211,12 @@ export function resetGame() {
   State.particles = []
   State.floatingTexts = []
   State.score = 0
+  State.shakeCooldown = 0
 
   // Do not reset currentEnergy or maxEnergy. They are persistent across games.
   // maxEnergy is managed by GearSystem based on the next gear cost.
 
   State.comboCount = 0
-  State.systemHeat = 0
   State.isGameOver = false
 
   for (let k in State.skills) {
