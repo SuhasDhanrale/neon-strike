@@ -7,6 +7,7 @@ import { addEnergy, addScore, handleCombo } from './scoring.js'
 import { createParticles, createFloatingText } from '../visuals/particleSystem.js'
 import { showCombo, hideCombo } from '../visuals/uiRenderer.js'
 import { THEME } from '../visuals/theme.js'
+import { SoundManager } from '../systems/SoundManager.js'
 
 export function resolveCollisions() {
   for (let i = 0; i < State.orbs.length; i++) {
@@ -37,12 +38,14 @@ export function resolveCollisions() {
             if (o2.isGeode) o2.hp--
             createParticles((o1.x + o2.x) / 2, (o1.y + o2.y) / 2, '#fff')
             State.screenShake += 5
+            SoundManager.play('geode_hit', { pitch: 0.9 + Math.random() * 0.2 })
             if (o1.isGeode && o1.hp <= 0) {
               o1.markedForDeletion = true
               createFloatingText(o1.x, o1.y, "CRACKED!", THEME.floatingTextColors.cracked, 36)
               addEnergy(20)
               awardAmmo(AMMO_TYPES.PIERCE)
               EventBus.emit('orb:geode_cracked', o1)
+              SoundManager.play('geode_cracked')
             }
             if (o2.isGeode && o2.hp <= 0) {
               o2.markedForDeletion = true
@@ -50,6 +53,7 @@ export function resolveCollisions() {
               addEnergy(20)
               awardAmmo(AMMO_TYPES.PIERCE)
               EventBus.emit('orb:geode_cracked', o2)
+              SoundManager.play('geode_cracked')
             }
           }
         }
@@ -70,6 +74,7 @@ export function resolveCollisions() {
           if (newType > State.maxUnlockedOrbIndex) {
             State.maxUnlockedOrbIndex = newType
             EventBus.emit('unlocked:orb', { typeIndex: newType, x: mx, y: my })
+            SoundManager.play('orb_unlock')
           }
 
           let baseScore = ORB_TYPES[newType].value
@@ -89,6 +94,10 @@ export function resolveCollisions() {
             hideCombo()
             createFloatingText(mx, my, `+${baseScore}`, THEME.floatingTextColors.score, 28)
           }
+
+          // Merge sound — pitch scales with orb tier (higher tier = higher pitch)
+          const mergePitch = 0.7 + newType * 0.05
+          SoundManager.play('orb_merge', { pitch: mergePitch })
 
           setTimeout(() => {
             let newOrb = new Orb(mx, my, newType, false, AMMO_TYPES.STANDARD)
@@ -123,6 +132,9 @@ export function resolveCollisions() {
 
         let velAlongNormal = rvx * nx + rvy * ny
         if (velAlongNormal > 0) continue
+
+        // Play orb-orb bounce sound if the collision is significant
+        if (vRel > 3) SoundManager.play('orb_bounce_orb')
 
         let e = 0.5
 

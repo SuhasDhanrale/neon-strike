@@ -4,6 +4,7 @@ import { updateUI } from '../visuals/uiRenderer.js'
 import { createFloatingText } from '../visuals/particleSystem.js'
 import { THEME } from '../visuals/theme.js'
 import { AdManager } from '../../ads/AdManager.js'
+import { SoundManager } from '../systems/SoundManager.js'
 
 const registry = {}
 
@@ -51,11 +52,14 @@ function showRequisitionModal(skillId, currentCost, canAfford) {
   }
 
   document.getElementById('requisition-overlay').classList.remove('hidden')
+  SoundManager.play('requisition_open')
 }
 
-export function closeRequisition() {
+// silent=true skips the cancel sound (e.g. when called after confirming a skill)
+export function closeRequisition(silent = false) {
   document.getElementById('requisition-overlay').classList.add('hidden')
   pendingSkillId = null
+  if (!silent) SoundManager.play('requisition_cancel')
 }
 
 export function confirmRequisition(method) {
@@ -72,8 +76,9 @@ export function confirmRequisition(method) {
     localStorage.setItem('neonStrike_currentEnergy', State.currentEnergy.toString())
     runtimeSkill.currentCost = Math.ceil(runtimeSkill.currentCost * skill.mult)
 
+    SoundManager.play('requisition_confirm')
     _executeSkill(skill)
-    closeRequisition()
+    closeRequisition(true)  // silent — confirm sound already played
   }
   else if (method === 'ad') {
     // Show Ad
@@ -84,7 +89,7 @@ export function confirmRequisition(method) {
       } else {
         createFloatingText(State.canvas.width / 2, State.canvas.height / 2, "SIGNAL LOST", THEME.floatingTextColors.needEnergy, 30)
       }
-      closeRequisition()
+      closeRequisition(true)  // silent — ad flow, no cancel sound
     })
   }
 }

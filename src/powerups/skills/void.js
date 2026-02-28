@@ -1,6 +1,7 @@
 // VOID skill module
 import { createFloatingText, createParticles } from '../../visuals/particleSystem.js'
 import { THEME } from '../../visuals/theme.js'
+import { SoundManager } from '../../systems/SoundManager.js'
 
 export default {
   id: 3,
@@ -29,5 +30,6 @@ export default {
       THEME.floatingTextColors.void,
       60
     )
+    SoundManager.play('skill_void')
   }
 }

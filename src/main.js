@@ -15,6 +15,7 @@ import { GearSystem } from './systems/GearSystem.js'
 import { SystemBot } from './ui/systemBot.js'
 import { initLoadingOption1, startLoadingSequence } from './ui/loading-opt1.js'
 import { initFtueShutter } from './ftue/ftue-shutter.js'
+import { SoundManager } from './systems/SoundManager.js'
 
 function init() {
   // Canvas setup
@@ -59,6 +60,19 @@ function init() {
   initLoadingOption1()
   initFtueShutter()
 
+  // Init sound system (AudioContext unlocked on first user gesture)
+  SoundManager.init()
+
+  // Wire mute button
+  const muteBtn = document.getElementById('mute-btn')
+  if (muteBtn) {
+    muteBtn.textContent = SoundManager.isMuted() ? '🔇' : '🔊'
+    muteBtn.addEventListener('click', () => {
+      const nowMuted = SoundManager.toggleMute()
+      muteBtn.textContent = nowMuted ? '🔇' : '🔊'
+    })
+  }
+
   // Start the loading sequence - game will start after it completes
   startLoadingSequence(() => {
     // Check FTUE
@@ -73,6 +87,9 @@ function init() {
     } else {
       resetGame()
     }
+
+    // Start background music (after first interaction, AudioContext already unlocked)
+    SoundManager.playMusic('bg_music')
 
     // Start loop
     gameLoop.start()

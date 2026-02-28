@@ -2,6 +2,7 @@
 import { State } from '../state.js'
 import { spawnOrb } from './orbManager.js'
 import { MAX_POWER } from '../config.js'
+import { SoundManager } from '../systems/SoundManager.js'
 
 let canvas = null
 
@@ -19,6 +20,7 @@ function startAim(e) {
   const pos = getPos(e)
   State.aimStart = pos
   State.aimCurrent = pos
+  SoundManager.play('aim_start')
   const tutEl = document.getElementById('tutorial-text')
   if (tutEl) tutEl.style.display = 'none'
 }

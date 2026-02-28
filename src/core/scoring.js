@@ -1,6 +1,7 @@
 // addScore(), addEnergy(), combo logic
 import { State } from '../state.js'
 import { updateUI } from '../visuals/uiRenderer.js'
+import { SoundManager } from '../systems/SoundManager.js'
 
 export function addScore(amount) {
   State.score += amount
@@ -24,6 +25,10 @@ export function handleCombo(baseScore) {
   if (State.comboTimer > 0) {
     State.comboCount++
     baseScore *= State.comboCount
+
+    // Combo sound — pitch scales with count (higher combo = higher pitch)
+    const comboPitch = 0.8 + Math.min(State.comboCount * 0.08, 0.6)
+    SoundManager.play('combo_hit', { pitch: comboPitch })
 
     const comboDisplay = document.getElementById('combo-display')
     if (comboDisplay) {
@@ -63,6 +68,7 @@ export function updateComboTimer() {
     if (State.comboTimer === 0) {
       State.comboCount = 0
       document.getElementById('combo-display').style.opacity = 0
+      SoundManager.play('combo_drop')
       // combo-active / vibrating class is cleared automatically by uiRenderer.updateScore() each frame
     }
   }

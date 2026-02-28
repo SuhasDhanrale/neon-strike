@@ -10,6 +10,7 @@ import { updateUI } from '../visuals/uiRenderer.js'
 import { LeaderboardManager } from '../leaderboard/leaderboardManager.js'
 import { LeaderboardUI } from '../leaderboard/ui/leaderboardUI.js'
 import { GearSystem } from '../systems/GearSystem.js'
+import { SoundManager } from '../systems/SoundManager.js'
 
 export class Orb {
   constructor(x, y, typeIndex, isGeode = false, ammoConfig = AMMO_TYPES.STANDARD) {
@@ -161,6 +162,7 @@ export function spawnOrb(angle, power) {
 
   updateUI()
   EventBus.emit('orb:spawned', orb)
+  SoundManager.play('orb_launch')
 
   setTimeout(() => { State.canFire = true }, SHOT_COOLDOWN_MS)
 }
@@ -190,9 +192,25 @@ async function endGame() {
     State.bestScore = State.score
     localStorage.setItem('neonDropBest', State.bestScore)
   }
-  document.getElementById('final-score').innerText = State.score
-  document.getElementById('game-over-screen').classList.add('active')
+
+  // === NEW: Update Death Screen UI ===
+  // Score display
+  document.getElementById('ds-score-val').innerText = State.score
+  document.getElementById('ds-best-val').innerText = State.bestScore
+
+  // Calculate system revival percentage
+  const activeGearsCount = GearSystem.getActiveGears().size
+  const totalGears = 11
+  const percentage = Math.floor((activeGearsCount / totalGears) * 100)
+  document.getElementById('ds-gauge-val').innerText = `${percentage}%`
+
+  // Show new death screen (hide old game-over-screen)
+  document.getElementById('game-over-screen').classList.remove('active')
+  document.getElementById('death-screen').classList.add('active')
+
   EventBus.emit('game:over')
+  SoundManager.play('game_over')
+  SoundManager.stopMusic(1500)
 
   // Submit score to leaderboard (fire and forget)
   LeaderboardManager.submit(State.score, {
@@ -223,7 +241,12 @@ export function resetGame() {
     State.skills[k].currentCost = State.skills[k].baseCost
   }
 
+  // Hide both screens on restart
   document.getElementById('game-over-screen').classList.remove('active')
+  document.getElementById('death-screen').classList.remove('active')
+
+  SoundManager.play('game_restart')
+  SoundManager.playMusic('bg_music')
 
   State.ammoQueue = []
   fillAmmoQueue()

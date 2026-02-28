@@ -1,5 +1,6 @@
 import { EventBus } from '../eventBus.js'
 import { triggerEmbersBurst } from '../visuals/particleSystem.js'
+import { SoundManager } from '../systems/SoundManager.js'
 
 const LORE_SCENARIOS = [
     { header: "SYSTEM IDLE", subtext: "The world engine lies dormant. Await energy input." },
@@ -88,6 +89,7 @@ export const SystemBot = {
 
             // 1. Reveal container
             container.classList.add('active')
+            SoundManager.play('bot_message')
 
             // 2. Set and show header with glitch
             headerEl.textContent = msg.header

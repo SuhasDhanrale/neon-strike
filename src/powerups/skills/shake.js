@@ -2,6 +2,7 @@
 import { createFloatingText } from '../../visuals/particleSystem.js'
 import { THEME } from '../../visuals/theme.js'
 import { SHAKE_COOLDOWN_FRAMES } from '../../config.js'
+import { SoundManager } from '../../systems/SoundManager.js'
 
 export default {
   id: 1,
@@ -19,6 +20,7 @@ export default {
 
     // Grant immunity from death-line check while orbs settle after the shake
     State.shakeCooldown = SHAKE_COOLDOWN_FRAMES
+    SoundManager.play('skill_shake')
 
     createFloatingText(
       State.canvas.width / 2,

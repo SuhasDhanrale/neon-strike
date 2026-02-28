@@ -8,6 +8,7 @@ import { GEAR_SYSTEM } from '../config.js'
 import { EventBus } from '../eventBus.js'
 import { triggerGearUnlockSequence } from '../visuals/Background/GearBackground.js'
 import * as ParticleSystem from '../visuals/particleSystem.js'
+import { SoundManager } from './SoundManager.js'
 
 // ============================================
 // MODULE STATE
@@ -138,6 +139,7 @@ function tryActivateGear() {
 
     // Emit gear unlock event for ALL gears including gear 0
     EventBus.emit('celebration:gear_unlocked', { gearIndex: nextIndex })
+    SoundManager.play('gear_unlock')
 }
 
 function updateDrain() {
@@ -171,6 +173,7 @@ export const GearSystem = {
         supplyBtn = document.getElementById('supply-energy-btn')
         if (supplyBtn) {
             supplyBtn.addEventListener('click', () => {
+                SoundManager.play('lever_pull')
                 tryActivateGear()
                 updateSupplyButton()
             })
@@ -215,6 +218,10 @@ export const GearSystem = {
                 triggerGearUnlockSequence()    // SVG: shake + flash + spark boost + gear rev-up
                 triggerGearUnlockExplosionSafe()   // Canvas: 80-100 embers
             })
+
+            // Energy state sounds (via EventBus)
+            EventBus.on('state:energy_full', () => SoundManager.play('energy_full'))
+            EventBus.on('state:energy_draining', () => SoundManager.play('energy_drain'))
         }
     },
 

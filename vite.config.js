@@ -98,8 +98,8 @@ export default defineConfig(({ command, mode }) => {
       open: true,
       host: true,
       headers: {
-        'Cache-Control': 'no-store',
-        'Clear-Site-Data': '"cache", "cookies", "storage"'
+        //'Cache-Control': 'no-store',
+        //'Clear-Site-Data': '"cache", "cookies", "storage"'
       }
     },
 

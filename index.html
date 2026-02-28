@@ -47,6 +47,9 @@
         <div id="ui-layer">
             <!-- Leaderboard Toggle Button -->
             <button id="lb-toggle-btn" title="Scoreboard">T</button>
+            <!-- Mute Toggle Button -->
+            <button id="mute-btn" title="Toggle Sound"
+                style="position:absolute;top:8px;right:46px;z-index:200;background:rgba(29,20,16,0.85);border:1px solid #4a4040;color:#e8ddd0;font-size:18px;width:34px;height:34px;border-radius:4px;cursor:pointer;padding:0;line-height:1;">🔊</button>
 
             <!-- NEW HUD LAYOUT -->
             <div class="hud-container">
@@ -206,7 +209,7 @@
 
             <div class="ds-revival-circ-wrapper">
                 <div class="ds-gauge-ring">
-                    <div class="ds-gauge-inner">10%</div>
+                    <div class="ds-gauge-inner" id="ds-gauge-val">10%</div>
                 </div>
                 <div class="ds-gauge-text">
                     <div class="title">SYSTEM STATUS</div>
@@ -224,7 +227,7 @@
             </div>
 
             <div class="ds-btn-row">
-                <button class="ds-f-btn primary">
+                <button class="ds-f-btn primary" onclick="resetGame()">
                     <span class="ds-btn-icon">↺</span> RESTART
                 </button>
             </div>
