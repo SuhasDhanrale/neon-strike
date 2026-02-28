@@ -31,6 +31,18 @@ let _unlocked = false      // AudioContext unlocked by user gesture
 
 // ─── Internal Helpers ─────────────────────────────────────────
 
+function makeDistortionCurve(amount) {
+    const k = amount;
+    const n_samples = 44100;
+    const curve = new Float32Array(n_samples);
+    const deg = Math.PI / 180;
+    for (let i = 0; i < n_samples; ++i) {
+        const x = (i * 2) / n_samples - 1;
+        curve[i] = ((3 + k) * x * 20 * deg) / (Math.PI + k * Math.abs(x));
+    }
+    return curve;
+}
+
 function ensureContext() {
     if (ctx) return
     try {
@@ -39,11 +51,27 @@ function ensureContext() {
         musicGain = ctx.createGain()
         sfxGain = ctx.createGain()
 
-        // Chain: sfxGain → masterGain → destination
-        //        musicGain → masterGain → destination
-        sfxGain.connect(masterGain)
+        // Compressor: punchy impacts, prevent clipping
+        const compressor = ctx.createDynamicsCompressor()
+        compressor.threshold.value = -12
+        compressor.knee.value = 10
+        compressor.ratio.value = 4
+        compressor.attack.value = 0.005
+        compressor.release.value = 0.1
+
+        // Waveshaper: mild industrial grit/saturation for SFX
+        const waveShaper = ctx.createWaveShaper()
+        waveShaper.curve = makeDistortionCurve(5)
+        waveShaper.oversample = '2x'
+
+        // Chain: sfxGain → waveShaper → masterGain
+        //        musicGain → masterGain
+        //        masterGain → compressor → destination
+        sfxGain.connect(waveShaper)
+        waveShaper.connect(masterGain)
         musicGain.connect(masterGain)
-        masterGain.connect(ctx.destination)
+        masterGain.connect(compressor)
+        compressor.connect(ctx.destination)
 
         _applyAllVolumes()
     } catch (e) {

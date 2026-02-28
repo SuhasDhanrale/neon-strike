@@ -34,124 +34,131 @@ async function renderSound(duration, sampleRate, recipe) {
 
 /**
  * ORB LAUNCH — Compressed-air pneumatic piston release
- * Short hiss + metallic click
+ * Short hiss + mechanical thwump
  */
 async function synthOrbLaunch(sampleRate = 44100) {
     return renderSound(0.25, sampleRate, async (ctx) => {
-        // Noise burst (hiss)
-        const noiseSource = ctx.createBufferSource()
-        noiseSource.buffer = createNoiseBuffer(ctx, 0.25)
+        // Thwump (low passed noise burst)
+        const thwump = ctx.createBufferSource()
+        thwump.buffer = createNoiseBuffer(ctx, 0.1)
+        const tFilter = ctx.createBiquadFilter()
+        tFilter.type = 'lowpass'
+        tFilter.frequency.value = 400
+        const tGain = ctx.createGain()
+        tGain.gain.setValueAtTime(0.8, 0)
+        tGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08)
+        thwump.connect(tFilter)
+        tFilter.connect(tGain)
+        tGain.connect(ctx.destination)
+        thwump.start(0)
 
-        const hissFilter = ctx.createBiquadFilter()
-        hissFilter.type = 'highpass'
-        hissFilter.frequency.value = 3000
-
-        const hissGain = ctx.createGain()
-        hissGain.gain.setValueAtTime(0.5, 0)
-        hissGain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15)
-
-        noiseSource.connect(hissFilter)
-        hissFilter.connect(hissGain)
-        hissGain.connect(ctx.destination)
-        noiseSource.start(0)
-
-        // Metallic click (short sine burst)
-        const click = ctx.createOscillator()
-        click.type = 'square'
-        click.frequency.setValueAtTime(800, 0)
-        click.frequency.exponentialRampToValueAtTime(200, ctx.currentTime + 0.05)
-
-        const clickGain = ctx.createGain()
-        clickGain.gain.setValueAtTime(0.4, 0)
-        clickGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.06)
-
-        click.connect(clickGain)
-        clickGain.connect(ctx.destination)
-        click.start(0)
-        click.stop(0.06)
+        // Hiss (high passed noise)
+        const hiss = ctx.createBufferSource()
+        hiss.buffer = createNoiseBuffer(ctx, 0.25)
+        const hFilter = ctx.createBiquadFilter()
+        hFilter.type = 'highpass'
+        hFilter.frequency.value = 4000
+        const hGain = ctx.createGain()
+        hGain.gain.setValueAtTime(0, 0)
+        hGain.gain.linearRampToValueAtTime(0.5, ctx.currentTime + 0.02)
+        hGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2)
+        hiss.connect(hFilter)
+        hFilter.connect(hGain)
+        hGain.connect(ctx.destination)
+        hiss.start(0)
     })
 }
 
 /**
- * ORB BOUNCE — Iron clang / metallic thud
+ * ORB BOUNCE — Deep hollow thud (Wood / Heavy Leather)
  */
 async function synthOrbBounce(sampleRate = 44100) {
     return renderSound(0.15, sampleRate, async (ctx) => {
-        const osc = ctx.createOscillator()
-        osc.type = 'triangle'
-        osc.frequency.setValueAtTime(600, 0)
-        osc.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 0.1)
+        // Dull impact noise (like striking heavy wood/rubber)
+        const noise = ctx.createBufferSource()
+        noise.buffer = createNoiseBuffer(ctx, 0.08)
+        const nFilter = ctx.createBiquadFilter()
+        nFilter.type = 'lowpass'
+        nFilter.frequency.value = 600 // Very dark, muted noise
+        const nGain = ctx.createGain()
+        nGain.gain.setValueAtTime(0, 0)
+        nGain.gain.linearRampToValueAtTime(0.3, ctx.currentTime + 0.01)
+        nGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.07)
+        noise.connect(nFilter)
+        nFilter.connect(nGain)
+        nGain.connect(ctx.destination)
+        noise.start(0)
+
+        // Low boomy body (Hollow knock)
+        const knock = ctx.createOscillator()
+        knock.type = 'sine'
+        knock.frequency.setValueAtTime(220, 0)
+        knock.frequency.exponentialRampToValueAtTime(80, ctx.currentTime + 0.1) // Quick pitch drop = drum body
 
         const gain = ctx.createGain()
-        gain.gain.setValueAtTime(0.35, 0)
+        gain.gain.setValueAtTime(0, 0)
+        gain.gain.linearRampToValueAtTime(0.4, ctx.currentTime + 0.01)
         gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12)
 
-        osc.connect(gain)
+        knock.connect(gain)
         gain.connect(ctx.destination)
-        osc.start(0)
-        osc.stop(0.15)
+        knock.start(0)
+        knock.stop(0.15)
     })
 }
 
 /**
- * ORB MERGE — Forge hammer strike with anvil ring + steam burst
+ * ORB MERGE — Heavy bass slam with air displacement (Non-metallic)
  */
 async function synthOrbMerge(sampleRate = 44100) {
     return renderSound(0.5, sampleRate, async (ctx) => {
-        // Anvil ring (metallic)
-        const anvil = ctx.createOscillator()
-        anvil.type = 'square'
-        anvil.frequency.setValueAtTime(1200, 0)
-        anvil.frequency.exponentialRampToValueAtTime(400, ctx.currentTime + 0.15)
+        // Deep sub-bass drop (808 style slam)
+        const slam = ctx.createOscillator()
+        slam.type = 'sine'
+        slam.frequency.setValueAtTime(140, 0)
+        slam.frequency.exponentialRampToValueAtTime(30, ctx.currentTime + 0.25)
 
-        const anvilGain = ctx.createGain()
-        anvilGain.gain.setValueAtTime(0.5, 0)
-        anvilGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35)
+        const slamGain = ctx.createGain()
+        slamGain.gain.setValueAtTime(0, 0)
+        slamGain.gain.linearRampToValueAtTime(0.8, ctx.currentTime + 0.015)
+        slamGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3)
 
-        const anvilFilter = ctx.createBiquadFilter()
-        anvilFilter.type = 'bandpass'
-        anvilFilter.frequency.value = 800
-        anvilFilter.Q.value = 2
+        slam.connect(slamGain)
+        slamGain.connect(ctx.destination)
+        slam.start(0)
+        slam.stop(0.35)
 
-        anvil.connect(anvilFilter)
-        anvilFilter.connect(anvilGain)
-        anvilGain.connect(ctx.destination)
-        anvil.start(0)
-        anvil.stop(0.4)
+        // Mid-range punch (wood / heavy stone knock)
+        const punch = ctx.createOscillator()
+        punch.type = 'triangle'
+        punch.frequency.setValueAtTime(250, 0)
+        punch.frequency.exponentialRampToValueAtTime(80, ctx.currentTime + 0.1)
 
-        // Impact thud
-        const thud = ctx.createOscillator()
-        thud.type = 'sine'
-        thud.frequency.setValueAtTime(200, 0)
-        thud.frequency.exponentialRampToValueAtTime(50, ctx.currentTime + 0.08)
+        const punchGain = ctx.createGain()
+        punchGain.gain.setValueAtTime(0, 0)
+        punchGain.gain.linearRampToValueAtTime(0.4, ctx.currentTime + 0.01)
+        punchGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15)
 
-        const thudGain = ctx.createGain()
-        thudGain.gain.setValueAtTime(0.6, 0)
-        thudGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1)
+        punch.connect(punchGain)
+        punchGain.connect(ctx.destination)
+        punch.start(0)
+        punch.stop(0.2)
 
-        thud.connect(thudGain)
-        thudGain.connect(ctx.destination)
-        thud.start(0)
-        thud.stop(0.1)
-
-        // Steam burst (noise)
-        const steam = ctx.createBufferSource()
-        steam.buffer = createNoiseBuffer(ctx, 0.5)
-
-        const steamFilter = ctx.createBiquadFilter()
-        steamFilter.type = 'bandpass'
-        steamFilter.frequency.value = 4000
-        steamFilter.Q.value = 1
-
-        const steamGain = ctx.createGain()
-        steamGain.gain.setValueAtTime(0, 0)
-        steamGain.gain.linearRampToValueAtTime(0.15, ctx.currentTime + 0.05)
-        steamGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4)
-
-        steam.connect(steamFilter)
-        steamFilter.connect(steamGain)
-        steamGain.connect(ctx.destination)
-        steam.start(0)
+        // Low, rushing air displacement (instead of sharp steam)
+        const air = ctx.createBufferSource()
+        air.buffer = createNoiseBuffer(ctx, 0.4)
+        const airFilter = ctx.createBiquadFilter()
+        airFilter.type = 'bandpass'
+        airFilter.frequency.value = 400 // Very deep, windy air
+        airFilter.Q.value = 0.5
+        const airGain = ctx.createGain()
+        airGain.gain.setValueAtTime(0, 0)
+        airGain.gain.linearRampToValueAtTime(0.25, ctx.currentTime + 0.05)
+        airGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4)
+        air.connect(airFilter)
+        airFilter.connect(airGain)
+        airGain.connect(ctx.destination)
+        air.start(0)
     })
 }
 
@@ -160,18 +167,29 @@ async function synthOrbMerge(sampleRate = 44100) {
  */
 async function synthOrbUnlock(sampleRate = 44100) {
     return renderSound(0.8, sampleRate, async (ctx) => {
-        // Ascending whistle
+        // Whistle main tone
         const osc = ctx.createOscillator()
         osc.type = 'sine'
-        osc.frequency.setValueAtTime(600, 0)
-        osc.frequency.linearRampToValueAtTime(1400, ctx.currentTime + 0.3)
-        osc.frequency.setValueAtTime(1400, ctx.currentTime + 0.3)
-        osc.frequency.linearRampToValueAtTime(1200, ctx.currentTime + 0.7)
+        osc.frequency.setValueAtTime(800, 0)
+        osc.frequency.linearRampToValueAtTime(1200, ctx.currentTime + 0.3)
+        osc.frequency.setValueAtTime(1200, ctx.currentTime + 0.4)
+        osc.frequency.linearRampToValueAtTime(1000, ctx.currentTime + 0.7)
+
+        // FM Modulator for "grit" / sputtering steam pressure
+        const lfo = ctx.createOscillator()
+        lfo.type = 'sawtooth'
+        lfo.frequency.value = 60 // rapid sputtering
+        const lfoGain = ctx.createGain()
+        lfoGain.gain.value = 50 // moderate FM depth
+        lfo.connect(lfoGain)
+        lfoGain.connect(osc.frequency) // modulate main frequency
+        lfo.start(0)
+        lfo.stop(0.8)
 
         const gain = ctx.createGain()
         gain.gain.setValueAtTime(0, 0)
-        gain.gain.linearRampToValueAtTime(0.4, ctx.currentTime + 0.05)
-        gain.gain.setValueAtTime(0.4, ctx.currentTime + 0.5)
+        gain.gain.linearRampToValueAtTime(0.4, ctx.currentTime + 0.1)
+        gain.gain.setValueAtTime(0.4, ctx.currentTime + 0.4)
         gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.75)
 
         osc.connect(gain)
@@ -184,7 +202,7 @@ async function synthOrbUnlock(sampleRate = 44100) {
         steam.buffer = createNoiseBuffer(ctx, 0.8)
         const sFilter = ctx.createBiquadFilter()
         sFilter.type = 'highpass'
-        sFilter.frequency.value = 5000
+        sFilter.frequency.value = 4000
         const sGain = ctx.createGain()
         sGain.gain.setValueAtTime(0, 0)
         sGain.gain.linearRampToValueAtTime(0.12, ctx.currentTime + 0.1)
@@ -248,31 +266,29 @@ async function synthComboDrop(sampleRate = 44100) {
  */
 async function synthGeodeHit(sampleRate = 44100) {
     return renderSound(0.2, sampleRate, async (ctx) => {
-        // Sharp crystalline ping
-        const osc = ctx.createOscillator()
-        osc.type = 'sine'
-        osc.frequency.setValueAtTime(2400, 0)
-        osc.frequency.exponentialRampToValueAtTime(800, ctx.currentTime + 0.15)
-
-        const gain = ctx.createGain()
-        gain.gain.setValueAtTime(0.5, 0)
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.18)
-
-        osc.connect(gain)
-        gain.connect(ctx.destination)
-        osc.start(0)
-        osc.stop(0.2)
+        // Sharp crystalline ping (inharmonic stack)
+        const freqs = [1800, 2600, 3800]
+        freqs.forEach((f, i) => {
+            const osc = ctx.createOscillator()
+            osc.type = 'sine'
+            osc.frequency.value = f
+            const gain = ctx.createGain()
+            gain.gain.setValueAtTime(0.2 - i * 0.05, 0)
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15 - i * 0.03)
+            osc.connect(gain)
+            gain.connect(ctx.destination)
+            osc.start(0)
+            osc.stop(0.2)
+        })
 
         // Impact sub-thud
         const sub = ctx.createOscillator()
         sub.type = 'sine'
         sub.frequency.setValueAtTime(150, 0)
-        sub.frequency.exponentialRampToValueAtTime(60, ctx.currentTime + 0.06)
-
+        sub.frequency.exponentialRampToValueAtTime(60, ctx.currentTime + 0.05)
         const subGain = ctx.createGain()
         subGain.gain.setValueAtTime(0.4, 0)
-        subGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08)
-
+        subGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.07)
         sub.connect(subGain)
         subGain.connect(ctx.destination)
         sub.start(0)
@@ -288,51 +304,46 @@ async function synthGeodeCracked(sampleRate = 44100) {
         // Shatter noise burst
         const noise = ctx.createBufferSource()
         noise.buffer = createNoiseBuffer(ctx, 0.7)
-
         const shatterFilter = ctx.createBiquadFilter()
         shatterFilter.type = 'bandpass'
         shatterFilter.frequency.setValueAtTime(6000, 0)
-        shatterFilter.frequency.exponentialRampToValueAtTime(1000, ctx.currentTime + 0.5)
-        shatterFilter.Q.value = 3
-
+        shatterFilter.frequency.exponentialRampToValueAtTime(2000, ctx.currentTime + 0.5)
+        shatterFilter.Q.value = 2
         const shatterGain = ctx.createGain()
-        shatterGain.gain.setValueAtTime(0.6, 0)
+        shatterGain.gain.setValueAtTime(0.5, 0)
         shatterGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6)
-
         noise.connect(shatterFilter)
         shatterFilter.connect(shatterGain)
         shatterGain.connect(ctx.destination)
         noise.start(0)
 
-        // Crystal ring (high sine)
-        const ring = ctx.createOscillator()
-        ring.type = 'sine'
-        ring.frequency.setValueAtTime(3000, 0)
-        ring.frequency.exponentialRampToValueAtTime(1500, ctx.currentTime + 0.5)
-
-        const ringGain = ctx.createGain()
-        ringGain.gain.setValueAtTime(0.3, 0)
-        ringGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6)
-
-        ring.connect(ringGain)
-        ringGain.connect(ctx.destination)
-        ring.start(0)
-        ring.stop(0.65)
+        // Crystal ring cluster (multiple short sine pings)
+        const freqs = [2800, 3500, 4800, 5600]
+        freqs.forEach((f, i) => {
+            const ring = ctx.createOscillator()
+            ring.type = 'sine'
+            ring.frequency.value = f
+            const ringGain = ctx.createGain()
+            ringGain.gain.setValueAtTime(0.15, 0)
+            ringGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6 - i * 0.1)
+            ring.connect(ringGain)
+            ringGain.connect(ctx.destination)
+            ring.start(0)
+            ring.stop(0.65)
+        })
 
         // Low impact boom
         const boom = ctx.createOscillator()
         boom.type = 'sine'
-        boom.frequency.setValueAtTime(100, 0)
-        boom.frequency.exponentialRampToValueAtTime(30, ctx.currentTime + 0.2)
-
+        boom.frequency.setValueAtTime(120, 0)
+        boom.frequency.exponentialRampToValueAtTime(40, ctx.currentTime + 0.15)
         const boomGain = ctx.createGain()
-        boomGain.gain.setValueAtTime(0.5, 0)
-        boomGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25)
-
+        boomGain.gain.setValueAtTime(0.6, 0)
+        boomGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2)
         boom.connect(boomGain)
         boomGain.connect(ctx.destination)
         boom.start(0)
-        boom.stop(0.3)
+        boom.stop(0.25)
     })
 }
 
@@ -978,6 +989,118 @@ async function synthShutterOpen(sampleRate = 44100) {
     })
 }
 
+/**
+ * BACKGROUND MUSIC — Ambient industrial drone
+ * A massive, slow-moving factory environment (8-second seamless loop)
+ */
+async function synthBgMusic(sampleRate = 44100) {
+    const duration = 8.0 // 8 second seamless loop
+    return renderSound(duration, sampleRate, async (ctx) => {
+        // 1. Foundation: Deep Sub-Drone (A1 = ~55Hz)
+        const drone = ctx.createOscillator()
+        drone.type = 'sine'
+        drone.frequency.value = 55.0
+
+        // Slow tremolo for the drone (1 cycle = 8s)
+        const lfo = ctx.createOscillator()
+        lfo.type = 'sine'
+        lfo.frequency.value = 0.125
+
+        const lfoGain = ctx.createGain()
+        lfoGain.gain.value = 0.2
+        lfo.connect(lfoGain)
+
+        const droneGain = ctx.createGain()
+        droneGain.gain.value = 0.4
+        lfoGain.connect(droneGain.gain)
+
+        drone.connect(droneGain)
+        droneGain.connect(ctx.destination)
+
+        drone.start(0)
+        lfo.start(0)
+
+        // 2. Minor Fifth (E2 = ~82.4Hz)
+        const fifth = ctx.createOscillator()
+        fifth.type = 'triangle'
+        fifth.frequency.value = 82.4
+
+        const fifthLfo = ctx.createOscillator()
+        fifthLfo.type = 'sine'
+        fifthLfo.frequency.value = 0.25 // 2 cycles = 8s
+
+        const fifthLfoGain = ctx.createGain()
+        fifthLfoGain.gain.value = 0.1
+        fifthLfo.connect(fifthLfoGain)
+
+        const fifthGain = ctx.createGain()
+        fifthGain.gain.value = 0.15
+        fifthLfoGain.connect(fifthGain.gain)
+
+        fifth.connect(fifthGain)
+        fifthGain.connect(ctx.destination)
+
+        fifth.start(0)
+        fifthLfo.start(0)
+
+        // 3. Constant Factory Rumble (Lowpass noise)
+        const noise = ctx.createBufferSource()
+        noise.buffer = createNoiseBuffer(ctx, duration)
+
+        const noiseFilter = ctx.createBiquadFilter()
+        noiseFilter.type = 'lowpass'
+        noiseFilter.frequency.value = 250 // Keep it muddy and distant
+
+        const noiseGain = ctx.createGain()
+        noiseGain.gain.value = 0.6
+
+        noise.connect(noiseFilter)
+        noiseFilter.connect(noiseGain)
+        noiseGain.connect(ctx.destination)
+        noise.start(0)
+
+        // 4. Rhythm: distant heartbeat / pumping pistons (0s and 4s)
+        for (let i = 0; i < 2; i++) {
+            const t = i * 4.0 // at 0s and 4s
+
+            // Piston Thud (sub impact)
+            const thud = ctx.createOscillator()
+            thud.type = 'sine'
+            thud.frequency.setValueAtTime(60, t)
+            thud.frequency.exponentialRampToValueAtTime(20, t + 0.5)
+
+            const thudGain = ctx.createGain()
+            thudGain.gain.setValueAtTime(0.7, t)
+            thudGain.gain.exponentialRampToValueAtTime(0.001, t + 0.8)
+
+            thud.connect(thudGain)
+            thudGain.connect(ctx.destination)
+            thud.start(t)
+            thud.stop(t + 1)
+
+            // Steam Exhaust (noise burst)
+            const steam = ctx.createBufferSource()
+            steam.buffer = createNoiseBuffer(ctx, 1.5)
+
+            const steamFilter = ctx.createBiquadFilter()
+            steamFilter.type = 'bandpass'
+            steamFilter.frequency.setValueAtTime(3000, t)
+            steamFilter.frequency.linearRampToValueAtTime(800, t + 1.2)
+            steamFilter.Q.value = 1
+
+            const steamGain = ctx.createGain()
+            steamGain.gain.setValueAtTime(0, t)
+            steamGain.gain.linearRampToValueAtTime(0.15, t + 0.2)
+            steamGain.gain.exponentialRampToValueAtTime(0.001, t + 1.5)
+
+            steam.connect(steamFilter)
+            steamFilter.connect(steamGain)
+            steamGain.connect(ctx.destination)
+            steam.start(t)
+        }
+    })
+}
+
 // ─── Export Map ────────────────────────────────────────────────
 
 /** 
@@ -985,6 +1108,7 @@ async function synthShutterOpen(sampleRate = 44100) {
  * Each function returns a Promise<AudioBuffer>
  */
 export const SYNTH_MAP = {
+    bg_music: synthBgMusic,
     orb_launch: synthOrbLaunch,
     orb_bounce_wall: synthOrbBounce,
     orb_bounce_orb: synthOrbBounce,

@@ -13,8 +13,8 @@
 export const SOUNDS = {
     // ── BACKGROUND MUSIC ────────────────────────────────────────
     bg_music: {
-        src: 'audio/bg004.mp3',
-        vol: 0.35,
+        src: 'audio/bg0004.mp3',
+        vol: 0.10,
         cooldown: 0,
         pitchVar: 0,
         loop: true,
@@ -37,7 +37,7 @@ export const SOUNDS = {
     },
     orb_bounce_orb: {
         src: 'audio/sfx/orb_bounce.mp3',
-        vol: 0.20,
+        vol: 0.05,
         cooldown: 80,
         pitchVar: 0.12,
         loop: false,
