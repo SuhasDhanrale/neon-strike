@@ -17,17 +17,17 @@ export const SHAKE_COOLDOWN_FRAMES = 180   // ~3 sec immunity after Shake power-
 export const BASE_MAX_ENERGY = 100
 
 export const ORB_TYPES = [
-  { value: 2, radius: 40, color: '#00f3ff', glow: '#00f3ff' },
-  { value: 4, radius: 45, color: '#00ff41', glow: '#00ff41' },
-  { value: 8, radius: 50, color: '#ffe600', glow: '#ffe600' },
-  { value: 16, radius: 55, color: '#ff8c00', glow: '#ff8c00' },
-  { value: 32, radius: 60, color: '#ff003c', glow: '#ff003c' },
-  { value: 64, radius: 65, color: '#d600ff', glow: '#d600ff' },
-  { value: 128, radius: 75, color: '#ffffff', glow: '#ffffff' },
-  { value: 256, radius: 80, color: '#00f3ff', glow: '#00f3ff' },
-  { value: 512, radius: 85, color: '#00ff41', glow: '#00ff41' },
-  { value: 1024, radius: 90, color: '#ffe600', glow: '#ffe600' },
-  { value: 2048, radius: 95, color: '#ff003c', glow: '#ff003c' }
+  { value: 2, radius: 25, color: '#00f3ff', glow: '#00f3ff' },
+  { value: 4, radius: 35, color: '#00ff41', glow: '#00ff41' },
+  { value: 8, radius: 45, color: '#ffe600', glow: '#ffe600' },
+  { value: 16, radius: 60, color: '#ff8c00', glow: '#ff8c00' },
+  { value: 32, radius: 70, color: '#ff003c', glow: '#ff003c' },
+  { value: 64, radius: 80, color: '#d600ff', glow: '#d600ff' },
+  { value: 128, radius: 90, color: '#ffffff', glow: '#ffffff' },
+  { value: 256, radius: 100, color: '#00f3ff', glow: '#00f3ff' },
+  { value: 512, radius: 105, color: '#00ff41', glow: '#00ff41' },
+  { value: 1024, radius: 110, color: '#ffe600', glow: '#ffe600' },
+  { value: 2048, radius: 120, color: '#ff003c', glow: '#ff003c' }
 ]
 
 export const AMMO_TYPES = {
@@ -51,7 +51,7 @@ export const GEAR_SYSTEM = {
   BASE_COST: 100,
   EXPONENT: 1.5,
   // Pre-generated costs — edit these directly to set exact per-gear costs
-  GEAR_COSTS: Array.from({ length: 11 }, (_, i) => Math.round(100 * Math.pow(1.5, i))),
+  GEAR_COSTS: Array.from({ length: 11 }, (_, i) => Math.round(100 * Math.pow(1.55, i))),
   // [100, 150, 225, 338, 506, 759, 1139, 1709, 2563, 3845, 5767]
 
   // Animation speed

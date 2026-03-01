@@ -66,10 +66,19 @@ function init() {
   // Wire mute button
   const muteBtn = document.getElementById('mute-btn')
   if (muteBtn) {
-    muteBtn.textContent = SoundManager.isMuted() ? '🔇' : '🔊'
+    const updateMuteVisuals = (isMuted) => {
+      muteBtn.textContent = isMuted ? '🔇' : '🔊'
+      if (isMuted) {
+        muteBtn.classList.add('muted')
+      } else {
+        muteBtn.classList.remove('muted')
+      }
+    }
+    updateMuteVisuals(SoundManager.isMuted())
+
     muteBtn.addEventListener('click', () => {
       const nowMuted = SoundManager.toggleMute()
-      muteBtn.textContent = nowMuted ? '🔇' : '🔊'
+      updateMuteVisuals(nowMuted)
     })
   }
 
