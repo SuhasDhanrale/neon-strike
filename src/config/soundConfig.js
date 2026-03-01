@@ -14,7 +14,7 @@ export const SOUNDS = {
     // ── BACKGROUND MUSIC ────────────────────────────────────────
     bg_music: {
         src: 'audio/bg0004.mp3',
-        vol: 0.10,
+        vol: 0.20,
         cooldown: 0,
         pitchVar: 0,
         loop: true,
