@@ -122,7 +122,7 @@ let turbineEl = null
 const bgGearEls = {}
 const frontGearEls = {}
 let sparkEls = []
-let flashOverlayEl = null
+let flashOverlayEl = null  // HTML <div> overlay — full-screen radial glow (NOT an SVG rect)
 let shakeContainerEl = null
 let computedGears = null
 let sparks = null
@@ -216,13 +216,9 @@ function buildSVGDOM() {
     defs.appendChild(vignetteDef)
 
     // ── Flash overlay (Overdrive / Glitch) ──────
-    flashOverlayEl = el('rect', {
-        x: '-550', y: '-550', width: '1100', height: '1100',
-        fill: '#22d3ee',
-        opacity: '0',
-        style: 'pointer-events:none; transition: opacity 0.7s ease-out;',
-    })
-    svgEl.appendChild(flashOverlayEl)
+    // This is a full-screen HTML div (NOT inside SVG) to correctly replicate
+    // the radial-gradient + mix-blend-overlay effect from the spec.
+    // It is inserted into the DOM in init() before the SVG.
 
     // ── Shake container (all animated content) ──
     shakeContainerEl = el('g', { id: 'gear-shake-container' })
@@ -409,14 +405,14 @@ function applyVisualState(activeGears) {
 
     // Turbine opacity & color
     if (isOverdrive) {
-        turbineEl.setAttribute('opacity', '0.3')
+        turbineEl.setAttribute('opacity', '0.4')
         turbineEl.style.transition = 'opacity 0.075s'
         turbineEl.querySelectorAll('circle, path').forEach(e => {
             e.setAttribute('stroke', '#06b6d4')
             e.setAttribute('fill', '#06b6d4')
         })
     } else if (isGlitching) {
-        turbineEl.setAttribute('opacity', '0.15')
+        turbineEl.setAttribute('opacity', '0.25')
         turbineEl.style.transition = 'opacity 0.075s'
         turbineEl.querySelectorAll('circle, path').forEach(e => {
             e.setAttribute('stroke', '#22d3ee')
@@ -431,15 +427,21 @@ function applyVisualState(activeGears) {
         })
     }
 
-    // Flash overlay (cyan flash)
+    // Flash overlay (radial cyan glow) — HTML div with mix-blend-overlay
     // Skip if unlock flash is active (let it control the flash)
     if (_unlockFlashActive) {
         // Unlock flash is in control - don't touch flashOverlayEl
     } else if (showFlash || isGlitching) {
-        flashOverlayEl.setAttribute('opacity', showFlash ? '0.15' : '0.08')
+        flashOverlayEl.style.opacity = showFlash ? '1' : '0.5'
         flashOverlayEl.style.transition = isGlitching ? 'opacity 0.075s' : 'opacity 0.7s ease-out'
+        // Overdrive flash: brighter solid cyan radial burst
+        if (showFlash) {
+            flashOverlayEl.style.background = 'radial-gradient(ellipse at center, #22d3ee 0%, rgba(34,211,238,0.6) 50%, transparent 80%)'
+        } else {
+            flashOverlayEl.style.background = 'radial-gradient(ellipse at center, #22d3ee 0%, rgba(34,211,238,0.4) 40%, transparent 75%)'
+        }
     } else {
-        flashOverlayEl.setAttribute('opacity', '0')
+        flashOverlayEl.style.opacity = '0'
         flashOverlayEl.style.transition = 'opacity 0.7s ease-out'
     }
 
@@ -553,12 +555,29 @@ export const GearBackground = {
             document.head.appendChild(style)
         }
 
-        // Insert SVG as absolute first child of game-container
+        // Create the full-screen flash overlay div (matches spec exactly)
+        flashOverlayEl = document.createElement('div')
+        flashOverlayEl.id = 'gear-flash-overlay'
+        flashOverlayEl.style.cssText = [
+            'position:absolute',
+            'inset:0',
+            'pointer-events:none',
+            'z-index:50',
+            'mix-blend-mode:overlay',
+            'opacity:0',
+            'transition:opacity 0.7s ease-out',
+            // Radial gradient: bright cyan center fading out — matches the spec div with bg-cyan-400
+            'background:radial-gradient(ellipse at center, #22d3ee 0%, rgba(34,211,238,0.4) 40%, transparent 75%)',
+        ].join(';')
+
+        // Insert SVG + flash overlay into game-container (SVG first so overlay is above it)
         const container = document.getElementById('game-container')
         if (container) {
             container.insertBefore(svgEl, container.firstChild)
+            container.insertBefore(flashOverlayEl, svgEl.nextSibling)
         } else {
             document.body.insertBefore(svgEl, document.body.firstChild)
+            document.body.insertBefore(flashOverlayEl, svgEl.nextSibling)
         }
     },
 
@@ -666,18 +685,20 @@ export const GearBackground = {
  * - Gear speed boost
  */
 export function triggerGearUnlockSequence() {
-    // 1. FLASH — bright white-cyan spike, then fade
+    // 1. FLASH — bright white-cyan radial burst spike, then fade
     _unlockFlashActive = true
-    flashOverlayEl.setAttribute('fill', '#ffffff')          // pure white blast
+    // Pure white radial burst at peak
+    flashOverlayEl.style.background = 'radial-gradient(ellipse at center, #ffffff 0%, rgba(34,211,238,0.8) 40%, transparent 75%)'
     flashOverlayEl.style.transition = 'opacity 0.08s ease-in'
-    flashOverlayEl.setAttribute('opacity', '0.55')          // very bright
+    flashOverlayEl.style.opacity = '0.85'                   // very bright blast
     setTimeout(() => {
+        // Fade back to normal cyan radial glow, then disappear
+        flashOverlayEl.style.background = 'radial-gradient(ellipse at center, #22d3ee 0%, rgba(34,211,238,0.4) 40%, transparent 75%)'
         flashOverlayEl.style.transition = 'opacity 1.2s ease-out'
-        flashOverlayEl.setAttribute('opacity', '0')
+        flashOverlayEl.style.opacity = '0'
         // release after fade-out is mostly done
         setTimeout(() => {
             _unlockFlashActive = false
-            flashOverlayEl.setAttribute('fill', '#22d3ee')  // restore normal color
         }, 1200)
     }, 150)                                                  // hold peak for 150ms
 

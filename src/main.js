@@ -16,6 +16,8 @@ import { SystemBot } from './ui/systemBot.js'
 import { initLoadingOption1, startLoadingSequence } from './ui/loading-opt1.js'
 import { initFtueShutter } from './ftue/ftue-shutter.js'
 import { SoundManager } from './systems/SoundManager.js'
+import { AdManager } from '../ads/AdManager.js'
+import { EventBus } from './eventBus.js'
 
 function init() {
   // Canvas setup
@@ -39,7 +41,22 @@ function init() {
   initInput(State.canvas)
 
   // Expose resetGame globally for the game-over button
-  window.resetGame = resetGame
+  window.resetGame = () => {
+    AdManager.reportGameplayStart()
+    resetGame()
+  }
+
+  // ── CrazyGames SDK: init AdManager non-blocking, signal loading start ──
+  AdManager.reportLoadingStart()
+  AdManager.init().catch(err => {
+    console.warn('[AdManager] Init failed silently:', err)
+  })
+
+  // ── CrazyGames SDK: game:over → stop gameplay, fire interstitial ──
+  EventBus.on('game:over', async () => {
+    AdManager.reportGameplayStop()
+    await AdManager.showInterstitialOnGameOver()
+  })
 
   // Init leaderboard (non-blocking - game starts regardless)
   LeaderboardManager.init().catch(err => {
@@ -119,6 +136,10 @@ function init() {
 
   // Start the loading sequence - game will start after it completes
   startLoadingSequence(() => {
+    // ── CrazyGames SDK: loading complete, gameplay begins ──
+    AdManager.reportLoadingStop()
+    AdManager.reportGameplayStart()
+
     // Check FTUE
     if (ftueManager.shouldRun()) {
       // Start FTUE mode:

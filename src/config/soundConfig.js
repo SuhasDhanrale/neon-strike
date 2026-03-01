@@ -13,7 +13,7 @@
 
 // Channel configuration: defines gain nodes for each channel
 export const CHANNELS = {
-    bg: { gainNode: 'music', defaultVol: 0.7 },
+    bg: { gainNode: 'music', defaultVol: 0.5 },
     sfx: { gainNode: 'sfx', defaultVol: 0.8 },
 }
 
