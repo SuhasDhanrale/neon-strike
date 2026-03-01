@@ -3,16 +3,18 @@
 // Steampunk / Volcanic Industrial Audio Engine
 //
 // Uses Web Audio API for fine-grained control:
+//   - SFX Limiter: prevents clipping when multiple SFX play simultaneously
 //   - Pitch variation (playbackRate) per sound
 //   - Rate limiting (cooldown per sound ID)
-//   - Independent volume categories: master / music / sfx
+//   - Independent volume channels: 'bg' (background music) and 'sfx' (sound effects)
+//   - Channel routing based on sound config 'channel' property
 //   - Mute support
 //   - Music crossfade
 //   - Mobile-safe AudioContext unlock on first interaction
 //   - Graceful degradation — missing files are silently skipped
 // ============================================================
 
-import { SOUNDS } from '../config/soundConfig.js'
+import { SOUNDS, CHANNELS } from '../config/soundConfig.js'
 import { SYNTH_MAP } from './SoundGenerator.js'
 
 // ─── Singleton State ──────────────────────────────────────────
@@ -51,7 +53,16 @@ function ensureContext() {
         musicGain = ctx.createGain()
         sfxGain = ctx.createGain()
 
-        // Compressor: punchy impacts, prevent clipping
+        // SFX Limiter: prevent clipping when multiple SFX play simultaneously
+        // A limiter is a compressor with very high ratio (hard knee at threshold)
+        const sfxLimiter = ctx.createDynamicsCompressor()
+        sfxLimiter.threshold.value = -6  // Start limiting at -6dB
+        sfxLimiter.knee.value = 0         // Hard knee (no gradual limiting)
+        sfxLimiter.ratio.value = 20       // Very high ratio = hard limiting
+        sfxLimiter.attack.value = 0.001   // Fast attack (0ms to start limiting)
+        sfxLimiter.release.value = 0.1    // Quick release
+
+        // Compressor: punchy impacts, overall dynamics
         const compressor = ctx.createDynamicsCompressor()
         compressor.threshold.value = -12
         compressor.knee.value = 10
@@ -64,10 +75,11 @@ function ensureContext() {
         waveShaper.curve = makeDistortionCurve(5)
         waveShaper.oversample = '2x'
 
-        // Chain: sfxGain → waveShaper → masterGain
+        // Chain: sfxGain → sfxLimiter → waveShaper → masterGain
         //        musicGain → masterGain
         //        masterGain → compressor → destination
-        sfxGain.connect(waveShaper)
+        sfxGain.connect(sfxLimiter)
+        sfxLimiter.connect(waveShaper)
         waveShaper.connect(masterGain)
         musicGain.connect(masterGain)
         masterGain.connect(compressor)
@@ -177,6 +189,24 @@ export const SoundManager = {
     },
 
     /**
+     * Get the gain node for a channel.
+     * @param {string} channel - 'bg' or 'sfx'
+     * @returns {GainNode}
+     */
+    _getGainNode(channel) {
+        const channelDef = CHANNELS[channel]
+        if (!channelDef) {
+            console.warn(`[SoundManager] Unknown channel: ${channel}, defaulting to sfx`)
+            return sfxGain
+        }
+        // Map channel name to actual gain node
+        if (channelDef.gainNode === 'music') {
+            return musicGain
+        }
+        return sfxGain
+    },
+
+    /**
      * Play a sound effect.
      * @param {string} soundId  — key from soundConfig
      * @param {object} [opts]   — { volume, pitch, loop, onended }
@@ -197,7 +227,11 @@ export const SoundManager = {
         const buf = await _loadBuffer(soundId)
         if (!buf) return
 
-        // Build graph: source → gainNode → sfxGain → masterGain → out
+        // Determine which channel/gain node to use
+        const channel = def.channel || 'sfx'
+        const gainNode = this._getGainNode(channel)
+
+        // Build graph: source → gainNode → channelGain → masterGain → out
         const source = ctx.createBufferSource()
         source.buffer = buf
 
@@ -209,10 +243,10 @@ export const SoundManager = {
 
         source.loop = opts.loop ?? def.loop ?? false
 
-        const gainNode = ctx.createGain()
-        gainNode.gain.value = opts.volume != null ? opts.volume : def.vol
-        source.connect(gainNode)
-        gainNode.connect(sfxGain)
+        const sourceGain = ctx.createGain()
+        sourceGain.gain.value = opts.volume != null ? opts.volume : def.vol
+        source.connect(sourceGain)
+        sourceGain.connect(gainNode)
 
         if (opts.onended) source.onended = opts.onended
 
@@ -222,6 +256,7 @@ export const SoundManager = {
 
     /**
      * Start looping background music.
+     * Uses the channel property from the sound config.
      * @param {string} soundId
      */
     async playMusic(soundId) {
@@ -240,17 +275,21 @@ export const SoundManager = {
         const buf = await _loadBuffer(soundId)
         if (!buf) return
 
+        // Determine which channel/gain node to use
+        const channel = def.channel || 'bg'
+        const gainNode = this._getGainNode(channel)
+
         const source = ctx.createBufferSource()
         source.buffer = buf
         source.loop = true
 
-        const gainNode = ctx.createGain()
-        gainNode.gain.value = def.vol
-        source.connect(gainNode)
-        gainNode.connect(musicGain)
+        const sourceGain = ctx.createGain()
+        sourceGain.gain.value = def.vol
+        source.connect(sourceGain)
+        sourceGain.connect(gainNode)
 
         source.start()
-        currentMusic = { source, gainNode }
+        currentMusic = { source, gainNode: sourceGain }
     },
 
     /**
@@ -273,11 +312,13 @@ export const SoundManager = {
 
     /**
      * Set volume for a category.
-     * @param {'master'|'music'|'sfx'} category
+     * @param {'master'|'bg'|'sfx'} category - 'bg' for background music, 'sfx' for sound effects
      * @param {number} value  0–1
      */
     setVolume(category, value) {
-        _volumes[category] = Math.max(0, Math.min(1, value))
+        // Map 'bg' to 'music' for internal volume tracking
+        const internalCategory = category === 'bg' ? 'music' : category
+        _volumes[internalCategory] = Math.max(0, Math.min(1, value))
         _applyAllVolumes()
     },
 

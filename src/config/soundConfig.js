@@ -8,16 +8,24 @@
 //   cooldown  — minimum ms between consecutive plays of this sound (0 = no limit)
 //   pitchVar  — +/- pitch variation as a fraction (e.g. 0.1 = ±10%). 0 = none
 //   loop      — whether to loop (for music/ambient only)
+//   channel   — 'bg' for background music, 'sfx' for sound effects
 // ============================================================
+
+// Channel configuration: defines gain nodes for each channel
+export const CHANNELS = {
+    bg: { gainNode: 'music', defaultVol: 0.7 },
+    sfx: { gainNode: 'sfx', defaultVol: 0.8 },
+}
 
 export const SOUNDS = {
     // ── BACKGROUND MUSIC ────────────────────────────────────────
     bg_music: {
         src: 'audio/bg0004.mp3',
-        vol: 0.20,
+        vol: 1,
         cooldown: 0,
         pitchVar: 0,
         loop: true,
+        channel: 'bg',
     },
 
     // ── CORE GAMEPLAY ────────────────────────────────────────────
@@ -27,6 +35,7 @@ export const SOUNDS = {
         cooldown: 120,
         pitchVar: 0.08,
         loop: false,
+        channel: 'sfx',
     },
     orb_bounce_wall: {
         src: 'audio/sfx/orb_bounce.mp3',
@@ -34,6 +43,7 @@ export const SOUNDS = {
         cooldown: 60,
         pitchVar: 0.15,
         loop: false,
+        channel: 'sfx',
     },
     orb_bounce_orb: {
         src: 'audio/sfx/orb_bounce.mp3',
@@ -41,6 +51,7 @@ export const SOUNDS = {
         cooldown: 80,
         pitchVar: 0.12,
         loop: false,
+        channel: 'sfx',
     },
     aim_start: {
         src: 'audio/sfx/aim_start.mp3',
@@ -48,6 +59,7 @@ export const SOUNDS = {
         cooldown: 200,
         pitchVar: 0,
         loop: false,
+        channel: 'sfx',
     },
 
     // ── MERGING & SCORING ─────────────────────────────────────────
@@ -57,6 +69,7 @@ export const SOUNDS = {
         cooldown: 60,
         pitchVar: 0.0,  // pitch is set programmatically based on tier
         loop: false,
+        channel: 'sfx',
     },
     orb_unlock: {
         src: 'audio/sfx/orb_unlock.mp3',
@@ -64,6 +77,7 @@ export const SOUNDS = {
         cooldown: 300,
         pitchVar: 0,
         loop: false,
+        channel: 'sfx',
     },
     combo_hit: {
         src: 'audio/sfx/combo_hit.mp3',
@@ -71,6 +85,7 @@ export const SOUNDS = {
         cooldown: 50,
         pitchVar: 0,  // pitch set programmatically to scale with combo count
         loop: false,
+        channel: 'sfx',
     },
     combo_drop: {
         src: 'audio/sfx/combo_drop.mp3',
@@ -78,6 +93,7 @@ export const SOUNDS = {
         cooldown: 500,
         pitchVar: 0,
         loop: false,
+        channel: 'sfx',
     },
 
     // ── GEODE ────────────────────────────────────────────────────
@@ -87,6 +103,7 @@ export const SOUNDS = {
         cooldown: 100,
         pitchVar: 0.10,
         loop: false,
+        channel: 'sfx',
     },
     geode_cracked: {
         src: 'audio/sfx/geode_cracked.mp3',
@@ -94,6 +111,7 @@ export const SOUNDS = {
         cooldown: 300,
         pitchVar: 0,
         loop: false,
+        channel: 'sfx',
     },
 
     // ── POWER-UPS ────────────────────────────────────────────────
@@ -103,6 +121,7 @@ export const SOUNDS = {
         cooldown: 200,
         pitchVar: 0,
         loop: false,
+        channel: 'sfx',
     },
     requisition_confirm: {
         src: 'audio/sfx/requisition_confirm.mp3',
@@ -110,6 +129,7 @@ export const SOUNDS = {
         cooldown: 300,
         pitchVar: 0,
         loop: false,
+        channel: 'sfx',
     },
     requisition_cancel: {
         src: 'audio/sfx/requisition_cancel.mp3',
@@ -117,6 +137,7 @@ export const SOUNDS = {
         cooldown: 200,
         pitchVar: 0,
         loop: false,
+        channel: 'sfx',
     },
     skill_shake: {
         src: 'audio/sfx/skill_shake.mp3',
@@ -124,6 +145,7 @@ export const SOUNDS = {
         cooldown: 500,
         pitchVar: 0,
         loop: false,
+        channel: 'sfx',
     },
     skill_smash: {
         src: 'audio/sfx/skill_smash.mp3',
@@ -131,6 +153,7 @@ export const SOUNDS = {
         cooldown: 500,
         pitchVar: 0,
         loop: false,
+        channel: 'sfx',
     },
     skill_void: {
         src: 'audio/sfx/skill_void.mp3',
@@ -138,6 +161,7 @@ export const SOUNDS = {
         cooldown: 500,
         pitchVar: 0,
         loop: false,
+        channel: 'sfx',
     },
 
     // ── GEAR SYSTEM ───────────────────────────────────────────────
@@ -147,6 +171,7 @@ export const SOUNDS = {
         cooldown: 1000,
         pitchVar: 0,
         loop: false,
+        channel: 'sfx',
     },
     energy_full: {
         src: 'audio/sfx/energy_full.mp3',
@@ -154,6 +179,7 @@ export const SOUNDS = {
         cooldown: 3000,
         pitchVar: 0,
         loop: false,
+        channel: 'sfx',
     },
     energy_drain: {
         src: 'audio/sfx/energy_drain.mp3',
@@ -161,6 +187,7 @@ export const SOUNDS = {
         cooldown: 1000,
         pitchVar: 0,
         loop: false,
+        channel: 'sfx',
     },
     lever_pull: {
         src: 'audio/sfx/lever_pull.mp3',
@@ -168,6 +195,7 @@ export const SOUNDS = {
         cooldown: 400,
         pitchVar: 0,
         loop: false,
+        channel: 'sfx',
     },
 
     // ── UI & SYSTEM BOT ───────────────────────────────────────────
@@ -177,6 +205,7 @@ export const SOUNDS = {
         cooldown: 500,
         pitchVar: 0,
         loop: false,
+        channel: 'sfx',
     },
     danger_warning: {
         src: 'audio/sfx/danger_warning.mp3',
@@ -184,6 +213,7 @@ export const SOUNDS = {
         cooldown: 2000,
         pitchVar: 0,
         loop: false,
+        channel: 'sfx',
     },
 
     // ── LIFECYCLE ────────────────────────────────────────────────
@@ -193,6 +223,7 @@ export const SOUNDS = {
         cooldown: 2000,
         pitchVar: 0,
         loop: false,
+        channel: 'sfx',
     },
     game_restart: {
         src: 'audio/sfx/game_restart.mp3',
@@ -200,6 +231,7 @@ export const SOUNDS = {
         cooldown: 500,
         pitchVar: 0,
         loop: false,
+        channel: 'sfx',
     },
     shutter_open: {
         src: 'audio/sfx/shutter_open.mp3',
@@ -207,5 +239,6 @@ export const SOUNDS = {
         cooldown: 1000,
         pitchVar: 0,
         loop: false,
+        channel: 'sfx',
     },
 }
