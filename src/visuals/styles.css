@@ -922,9 +922,9 @@ canvas {
 
 /* Volume Button - Steampunk Option 1 */
 .volume-btn-steampunk {
-    position: absolute;
-    top: 16px;
-    right: 20px;
+    position: relative;
+    top: 0;
+    right: 0;
     width: 44px;
     height: 44px;
     border-radius: 50%;
@@ -962,4 +962,96 @@ canvas {
     text-shadow: none;
     background: linear-gradient(145deg, #110d0a, var(--ink-black));
     border-color: var(--charcoal);
+}
+
+/* Volume Popup container */
+#volume-control-wrapper {
+    position: absolute;
+    top: 16px;
+    right: 20px;
+    z-index: 200;
+}
+
+/* The actual popup */
+.volume-popup {
+    position: absolute;
+    top: 55px;
+    /* right below the button */
+    right: 0;
+    width: 160px;
+    background: linear-gradient(145deg, var(--ink-black), var(--charcoal));
+    border: 3px solid var(--ash);
+    border-radius: 6px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    box-shadow: 4px 4px 0 var(--coal), inset 2px 2px 5px rgba(0, 0, 0, 0.8);
+
+    /* Animation defaults */
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    pointer-events: none;
+}
+
+.volume-popup.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+/* Rows inside popup */
+.vol-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.vol-icon {
+    font-size: 1rem;
+    color: var(--smoke);
+    text-shadow: 0 0 5px var(--ember);
+}
+
+/* Range Sliders */
+.vol-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    background: var(--ink-black);
+    outline: none;
+    border: 1px solid var(--coal);
+    border-radius: 3px;
+    box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+.vol-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--ember);
+    cursor: pointer;
+    border: 2px solid var(--parchment);
+    box-shadow: 0 0 4px var(--lava);
+    transition: background 0.15s;
+}
+
+.vol-slider::-webkit-slider-thumb:hover {
+    background: var(--lava);
+}
+
+.vol-slider::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--ember);
+    cursor: pointer;
+    border: 2px solid var(--parchment);
+    box-shadow: 0 0 4px var(--lava);
 }

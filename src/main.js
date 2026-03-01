@@ -63,22 +63,57 @@ function init() {
   // Init sound system (AudioContext unlocked on first user gesture)
   SoundManager.init()
 
-  // Wire mute button
+  // Wire mute button / volume popup
   const muteBtn = document.getElementById('mute-btn')
-  if (muteBtn) {
-    const updateMuteVisuals = (isMuted) => {
-      muteBtn.textContent = isMuted ? '🔇' : '🔊'
-      if (isMuted) {
+  const volPopup = document.getElementById('volume-popup')
+  const bgmSlider = document.getElementById('bgm-slider')
+  const sfxSlider = document.getElementById('sfx-slider')
+
+  if (muteBtn && volPopup) {
+    // Determine active vs muted icons
+    const updateIcon = () => {
+      if (bgmSlider.value === "0" && sfxSlider.value === "0" || SoundManager.isMuted()) {
+        muteBtn.textContent = '🔇'
         muteBtn.classList.add('muted')
       } else {
+        muteBtn.textContent = '🔊'
         muteBtn.classList.remove('muted')
       }
     }
-    updateMuteVisuals(SoundManager.isMuted())
 
-    muteBtn.addEventListener('click', () => {
-      const nowMuted = SoundManager.toggleMute()
-      updateMuteVisuals(nowMuted)
+    // Toggle popup visibility
+    muteBtn.addEventListener('click', (e) => {
+      e.stopPropagation()
+
+      // If globally muted and we click to open, optionally we can unmute. 
+      // But let's just let user interact with sliders.
+      volPopup.classList.toggle('active')
+    })
+
+    // Default 1
+    bgmSlider.value = SoundManager.isMuted() ? 0 : 1
+    sfxSlider.value = SoundManager.isMuted() ? 0 : 1
+    updateIcon()
+
+    bgmSlider.addEventListener('input', (e) => {
+      const val = parseFloat(e.target.value)
+      SoundManager.setVolume('bg', val)
+      if (val > 0 && SoundManager.isMuted()) SoundManager.unmute()
+      updateIcon()
+    })
+
+    sfxSlider.addEventListener('input', (e) => {
+      const val = parseFloat(e.target.value)
+      SoundManager.setVolume('sfx', val)
+      if (val > 0 && SoundManager.isMuted()) SoundManager.unmute()
+      updateIcon()
+    })
+
+    // Close popup if clicking outside
+    document.addEventListener('click', (e) => {
+      if (!document.getElementById('volume-control-wrapper').contains(e.target)) {
+        volPopup.classList.remove('active')
+      }
     })
   }
 

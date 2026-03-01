@@ -47,8 +47,20 @@
         <div id="ui-layer">
             <!-- Leaderboard Toggle Button -->
             <button id="lb-toggle-btn" title="Scoreboard">T</button>
-            <!-- Mute Toggle Button -->
-            <button id="mute-btn" class="volume-btn-steampunk" title="Toggle Sound">🔊</button>
+            <!-- Mute Default Replaced with Volume Popup Toggle -->
+            <div id="volume-control-wrapper">
+                <button id="mute-btn" class="volume-btn-steampunk" title="Volume Settings">🔊</button>
+                <div id="volume-popup" class="volume-popup">
+                    <div class="vol-row">
+                        <span class="vol-icon">🎵</span>
+                        <input type="range" id="bgm-slider" class="vol-slider" min="0" max="1" step="0.05" value="1">
+                    </div>
+                    <div class="vol-row">
+                        <span class="vol-icon">💥</span>
+                        <input type="range" id="sfx-slider" class="vol-slider" min="0" max="1" step="0.05" value="1">
+                    </div>
+                </div>
+            </div>
 
             <!-- NEW HUD LAYOUT -->
             <div class="hud-container">
