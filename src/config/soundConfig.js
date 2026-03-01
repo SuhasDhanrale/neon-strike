@@ -20,7 +20,7 @@ export const CHANNELS = {
 export const SOUNDS = {
     // ── BACKGROUND MUSIC ────────────────────────────────────────
     bg_music: {
-        src: 'audio/bg0004.mp3',
+        src: '/audio/bg0004.mp3',
         vol: 1,
         cooldown: 0,
         pitchVar: 0,

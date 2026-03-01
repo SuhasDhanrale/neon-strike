@@ -103,7 +103,13 @@ async function _loadBuffer(soundId) {
     if (!def) return null
     if (buffers[soundId]) return buffers[soundId]
 
-    // Try loading from file first
+    // If a synthesized version exists, use it directly — no network fetch needed.
+    // This avoids 404 warnings on platforms like CrazyGames where we don't ship .mp3 files.
+    if (SYNTH_MAP[soundId]) {
+        return _generateBuffer(soundId)
+    }
+
+    // No synth available — try loading the actual audio file
     try {
         const resp = await fetch(def.src)
         if (resp.ok) {
@@ -113,11 +119,10 @@ async function _loadBuffer(soundId) {
             return audioBuf
         }
     } catch {
-        // File missing or failed — fall through to synth
+        // File missing or failed — nothing more to try
     }
 
-    // Fallback: generate synthesized sound
-    return _generateBuffer(soundId)
+    return null
 }
 
 /** Generate a synthesized sound and cache it */

@@ -58,6 +58,11 @@ function init() {
     await AdManager.showInterstitialOnGameOver()
   })
 
+  // ── CrazyGames SDK: gear unlock → trigger site celebration (happytime) ──
+  EventBus.on('celebration:gear_unlocked', () => {
+    AdManager.reportHappyTime()
+  })
+
   // Init leaderboard (non-blocking - game starts regardless)
   LeaderboardManager.init().catch(err => {
     console.warn('[Leaderboard] Init failed silently:', err)

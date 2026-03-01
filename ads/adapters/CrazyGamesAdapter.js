@@ -16,7 +16,7 @@
  */
 
 import { BaseAdapter } from './BaseAdapter.js';
-import { SoundManager } from '../../src/audio/SoundManager.js';
+import { SoundManager } from '../../src/systems/SoundManager.js';
 
 const CRAZYGAMES_SDK_SCRIPT_ID = 'crazygames-sdk-v3';
 const CRAZYGAMES_SDK_SCRIPT_SRC = 'https://sdk.crazygames.com/crazygames-sdk-v3.js';
