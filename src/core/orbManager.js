@@ -38,7 +38,7 @@ export class Orb {
       this.color = ORB_TYPES[typeIndex].color
       this.glow = ORB_TYPES[typeIndex].glow
       this.value = ORB_TYPES[typeIndex].value
-      this.mass = this.radius
+      this.mass = Math.PI * this.radius * this.radius  // #5 fix: area-based mass (πr²)
     }
 
     if (this.ammoType === 'PIERCE') {
@@ -51,10 +51,15 @@ export class Orb {
 
   update() {
     this.vy += NORMAL_GRAVITY
-    this.vx *= FRICTION
-    this.vy *= FRICTION
+    this.vx *= FRICTION   // #2 fix: friction only on horizontal axis (air drag)
+    // vy intentionally NOT multiplied by FRICTION — gravity must act freely
     this.x += this.vx
     this.y += this.vy
+
+    // Velocity sleep: clamp micro-velocities to zero so orbs fully settle
+    const SLEEP_THRESHOLD = 0.08
+    if (Math.abs(this.vx) < SLEEP_THRESHOLD) this.vx = 0
+    if (Math.abs(this.vy) < SLEEP_THRESHOLD) this.vy = 0
 
     if (this.ghostTimer > 0) this.ghostTimer--
 
@@ -203,6 +208,11 @@ async function endGame() {
   const totalGears = 11
   const percentage = Math.floor((activeGearsCount / totalGears) * 100)
   document.getElementById('ds-gauge-val').innerText = `${percentage}%`
+
+  const gaugeRing = document.querySelector('.ds-gauge-ring')
+  if (gaugeRing) {
+    gaugeRing.style.background = `conic-gradient(var(--lava) 0%, var(--ember) ${percentage}%, #222 ${percentage}%, #222 100%)`
+  }
 
   // Show new death screen (hide old game-over-screen)
   document.getElementById('game-over-screen').classList.remove('active')

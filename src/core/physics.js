@@ -125,10 +125,12 @@ export function resolveCollisions() {
         let r1 = m2 / totalM
         let r2 = m1 / totalM
 
-        o1.x -= moveX * r1 * 2
-        o1.y -= moveY * r1 * 2
-        o2.x += moveX * r2 * 2
-        o2.y += moveY * r2 * 2
+        // Baumgarte: 0.5 gently corrects overlap without overshooting
+        const CORRECTION = 0.5
+        o1.x -= moveX * r1 * CORRECTION
+        o1.y -= moveY * r1 * CORRECTION
+        o2.x += moveX * r2 * CORRECTION
+        o2.y += moveY * r2 * CORRECTION
 
         let velAlongNormal = rvx * nx + rvy * ny
         if (velAlongNormal > 0) continue
@@ -136,7 +138,7 @@ export function resolveCollisions() {
         // Play orb-orb bounce sound if the collision is significant
         if (vRel > 3) SoundManager.play('orb_bounce_orb')
 
-        let e = 0.5
+        let e = 0.15  // Low restitution: orbs absorb contact and settle fast
 
         let jVal = -(1 + e) * velAlongNormal
         jVal /= (1 / m1 + 1 / m2)

@@ -17,9 +17,11 @@ let lastTime = 0
 function update() {
   if (State.isGameOver || State.isPaused) return
 
-  // Sub-stepping for physics stability
+  // Physics: integrate once (gravity + movement), then resolve collisions N times.
+  // Substepping ONLY repeats collision resolution — NOT gravity integration.
+  // Running orb.update() inside the loop would apply gravity 4× per frame.
+  State.orbs.forEach(orb => orb.update())
   for (let s = 0; s < SUBSTEPPING_ITERATIONS; s++) {
-    State.orbs.forEach(orb => orb.update())
     resolveCollisions()
   }
 
