@@ -1108,7 +1108,7 @@ async function synthBgMusic(sampleRate = 44100) {
  * Each function returns a Promise<AudioBuffer>
  */
 export const SYNTH_MAP = {
-    bg_music: synthBgMusic,
+    // bg_music intentionally omitted — use the real .mp3 file (audio/bg004.mp3)
     orb_launch: synthOrbLaunch,
     orb_bounce_wall: synthOrbBounce,
     orb_bounce_orb: synthOrbBounce,

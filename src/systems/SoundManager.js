@@ -28,6 +28,7 @@ let lastPlayed = {}        // { soundId: timestamp } for rate-limiting
 let currentMusic = null    // { source: AudioBufferSourceNode, gainNode: GainNode }
 
 let _muted = false
+let _externalMuted = false  // Muted by external source (e.g. CrazyGames SDK ad playing)
 let _volumes = { master: 1.0, music: 1.0, sfx: 1.0 }
 let _unlocked = false      // AudioContext unlocked by user gesture
 
@@ -93,7 +94,7 @@ function ensureContext() {
 
 function _applyAllVolumes() {
     if (!masterGain) return
-    masterGain.gain.value = _muted ? 0 : _volumes.master
+    masterGain.gain.value = (_muted || _externalMuted) ? 0 : _volumes.master
     musicGain.gain.value = _volumes.music
     sfxGain.gain.value = _volumes.sfx
 }
@@ -353,6 +354,16 @@ export const SoundManager = {
 
     isMuted() {
         return _muted
+    },
+
+    /**
+     * External mute control (used by CrazyGames SDK during ads).
+     * Separate from user mute preference — does not persist.
+     * @param {boolean} muted
+     */
+    setExternalMuted(muted) {
+        _externalMuted = !!muted
+        _applyAllVolumes()
     },
 }
 

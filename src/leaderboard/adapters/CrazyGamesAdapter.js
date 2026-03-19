@@ -204,7 +204,8 @@ export class CrazyGamesAdapter extends BaseAdapter {
         if (isNewPersonalBest) {
             this.personalBest = score;
             await this._persistCloudState(score);
-            this._reportHappyTimeThrottled();
+            // Note: happytime is NOT called here — it should only fire on gear unlock
+            // (handled via 'celebration:gear_unlocked' EventBus in main.js)
         }
 
         let remoteSubmitSuccess = false;

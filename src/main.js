@@ -16,6 +16,7 @@ import { SystemBot } from './ui/systemBot.js'
 import { initLoadingOption1, startLoadingSequence } from './ui/loading-opt1.js'
 import { initFtueShutter } from './ftue/ftue-shutter.js'
 import { SoundManager } from './systems/SoundManager.js'
+import { CHANNELS } from './config/soundConfig.js'
 import { AdManager } from '../ads/AdManager.js'
 import { EventBus } from './eventBus.js'
 
@@ -113,8 +114,13 @@ function init() {
     })
 
     // Default 1
-    bgmSlider.value = SoundManager.isMuted() ? 0 : 1
-    sfxSlider.value = SoundManager.isMuted() ? 0 : 1
+    bgmSlider.value = SoundManager.isMuted() ? 0 : CHANNELS.bg.defaultVol
+    sfxSlider.value = SoundManager.isMuted() ? 0 : CHANNELS.sfx.defaultVol
+    // Initialize SoundManager with default volume values from config
+    if (!SoundManager.isMuted()) {
+      SoundManager.setVolume('bg', CHANNELS.bg.defaultVol)
+      SoundManager.setVolume('sfx', CHANNELS.sfx.defaultVol)
+    }
     updateIcon()
 
     bgmSlider.addEventListener('input', (e) => {

@@ -24,6 +24,7 @@ class AdManagerClass {
         this.initialized = false;
         this.adapter = null;
         this.initPromise = null;
+        this._pendingCalls = [];
 
         this.sessionStats = {
             interstitialsShown: 0,
@@ -78,6 +79,7 @@ class AdManagerClass {
             this._setupEventListeners();
 
             this.initialized = true;
+            this._flushPendingCalls();
             console.log(`[AdManager] Initialized with ${this.adapter.name}`);
             return true;
         })();
@@ -105,7 +107,13 @@ class AdManagerClass {
     }
 
     _callAdapterMethod(methodName, ...args) {
-        if (!this.adapter || typeof this.adapter[methodName] !== 'function') {
+        if (!this.adapter) {
+            // Adapter not yet initialized — queue the call for replay after init
+            this._pendingCalls.push({ methodName, args });
+            return;
+        }
+
+        if (typeof this.adapter[methodName] !== 'function') {
             return;
         }
 
@@ -113,6 +121,14 @@ class AdManagerClass {
             return this.adapter[methodName](...args);
         } catch (error) {
             console.warn(`[AdManager] Adapter method failed: ${methodName}`, error);
+        }
+    }
+
+    _flushPendingCalls() {
+        const pending = this._pendingCalls;
+        this._pendingCalls = [];
+        for (const { methodName, args } of pending) {
+            this._callAdapterMethod(methodName, ...args);
         }
     }
 
